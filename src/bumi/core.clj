@@ -25,7 +25,8 @@
 
 (defn load-commit-into-titan [{:keys [people-mentioned diffs message
                                       hash parents author committer]}]
-  (g/transact! 
+  (g/transact!
+   (println hash)
    (let [author-node    (first (v/upsert! :name (assoc author   :type "person")))
          committer-node (first (v/upsert! :name (assoc committer :type "person")))
          commit-node    (first (v/upsert! :hash {:type "commit"

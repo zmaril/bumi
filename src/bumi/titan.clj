@@ -7,7 +7,10 @@
 
 (defn start []
   (println "Opening titan...")  
-  (g/open "bigbumigraph")
+  (g/open {:storage {:backend "embeddedcassandra"
+                     :hostname "localhost"
+                     :cassandra-config-dir
+                     "file:///Users/zackmaril/Projects/experiments/bumi/resources/cassandra.yaml"}})
 
   (println "Checking for keys and labels...")
   (g/transact!
