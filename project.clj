@@ -6,4 +6,4 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [hermes/hermes "0.2.2"]]
   :jvm-opts ["-Xmx1g" "-server"]
-  :main linux-titan.core)
+  :main bumi.core)

@@ -62,7 +62,7 @@
         
         committer-line (first (filter (partial begins-with-this-string? "committer") others))
         committer (parse-name (str-drop "committer " committer-line))] 
-    {:commit  (str-drop "commit " commit)
+    {:hash  (str-drop "commit " commit)
      :tree    (str-drop "tree " tree)
      :parents parents
      :author author
@@ -100,12 +100,11 @@
         metainfo (map finder commit-message-metainfo)
 
         diffs (map parse-diff (drop 1 (split (join "\n" diff-raw ) #"\ndiff --git ")))]
-    {:message (filter (fn [s]
-                        (not (some
-                              (fn [t] (begins-with-this-string? (str t ":") s))
-                              commit-message-metainfo))
-                        )
-                      cleaned-message-lines)
+    {:message (join "\n" (filter (fn [s]
+                               (not (some
+                                     (fn [t] (begins-with-this-string? (str t ":") s))
+                                     commit-message-metainfo)))
+                             cleaned-message-lines))
      :diffs diffs
      :people-mentioned (merge (apply merge metainfo))}))
 

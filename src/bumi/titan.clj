@@ -5,52 +5,51 @@
             [hermes.edge :as e]
             [hermes.type :as t]))
 
-(g/open "/tmp/")
-;;Person structure 
-{
- :name String
- :email String
-}
+(defn start []
+  (println "Opening titan...")  
+  (g/open "bigbumigraph")
 
-;;Person-[:authored]>commit
-{
- :authored java.util.Date
-}
+  (println "Checking for keys and labels...")
+  (g/transact!
+   ;;Types
+   (t/create-vertex-key-once :type String)
 
-;;Person-[:commited]->commit
-{
- :commited java.util.Date
-}
+   ;;Person types
+   (t/create-vertex-key-once :name String
+                             {:indexed true})
+   (t/create-vertex-key-once :email String
+                             {:indexed true})
 
-;;Person-[:reported]->commit
-{}
-;;Person-[:cc]->commit
-{}
-;;Person-[:acked]->commit
-{}
-;;Person-[:signed-off]->commit
-{}
+   ;;Commit types
+   (t/create-vertex-key-once :hash String
+                             {:indexed true :unique true})
+   (t/create-vertex-key-once :message String)
 
-;;Commit structure
-{
- :commit String
- :message String
+   ;;File types
+   (t/create-vertex-key-once :filename String
+                             {:indexed true})
 
- :tree String ;;TODO: Should this be included?
-}
+   
+   ;;Labels
+   ;;Commit -> Person
+   (let [group (t/create-group 2 "mentioned")]
+     (t/create-edge-label-once :Reviewed-by {:group group})
+     (t/create-edge-label-once :Reported-by {:group group})
+     (t/create-edge-label-once :Tested-by {:group group})
+     (t/create-edge-label-once :Acked-by {:group group})
+     (t/create-edge-label-once :From {:group group}))
+   
 
-;;Commit -[:parent-of]-> Commit
-{}
-
-;;Commit -[:changed] -> File
-{
- :diff String
-}
-
-;;File structure
-{
- :filename String 
- }
-
-;;;START STUFFING THIS INTO TITAN, forget about diffs as much. Just
-;;;get which file they are pointing to. 
+   ;;Person -> Commit
+   (t/create-edge-label-once :committed)
+   (t/create-edge-label-once :authored)
+   (t/create-vertex-key-once :committed)
+   
+   ;;Commit -> commit
+   (t/create-edge-label-once :parent-of)
+   
+   ;;Commit -> File
+   (t/create-edge-label-once :changed)
+   (t/create-vertex-key-once :new? Boolean)
+   (t/create-vertex-key-once :diff String))  
+  (println "All set up! WAAHHOOOOOO!"))
