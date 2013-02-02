@@ -1,5 +1,9 @@
 (ns linux-titan.titan
-  (:use [clojure.java.shell :only (sh with-sh-dir)]))
+  (:use [clojure.java.shell :only (sh with-sh-dir)])
+  (:require [hermes.core :as g]
+            [hermes.vertex :as v]
+            [hermes.edge :as e]
+            [hermes.type :as t]))
 
 ;;Person structure 
 {
@@ -47,3 +51,5 @@
  :filename String 
  }
 
+;;;START STUFFING THIS INTO TITAN, forget about diffs as much. Just
+;;;get which file they are pointing to. 
