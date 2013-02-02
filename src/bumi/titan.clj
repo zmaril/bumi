@@ -1,10 +1,11 @@
-(ns linux-titan.titan
+(ns bumi.titan
   (:use [clojure.java.shell :only (sh with-sh-dir)])
   (:require [hermes.core :as g]
             [hermes.vertex :as v]
             [hermes.edge :as e]
             [hermes.type :as t]))
 
+(g/open "/tmp/")
 ;;Person structure 
 {
  :name String
@@ -13,12 +14,12 @@
 
 ;;Person-[:authored]>commit
 {
- :authored Date
+ :authored java.util.Date
 }
 
 ;;Person-[:commited]->commit
 {
- :commited Date
+ :commited java.util.Date
 }
 
 ;;Person-[:reported]->commit

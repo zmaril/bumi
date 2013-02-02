@@ -1,4 +1,4 @@
-(ns linux-titan.core
+(ns bumi.core
   (:require [linux-titan.git :as git]))
 
 (def linux-src-dir "/Users/zackmaril/Projects/experiments/linux")

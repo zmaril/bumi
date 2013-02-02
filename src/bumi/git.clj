@@ -1,4 +1,4 @@
-(ns linux-titan.git
+(ns bumi.git
   (:use [clojure.java.shell :only (sh with-sh-dir)]
         [clojure.string :only (join split trim)]
         ))
@@ -30,7 +30,7 @@
   (= this (join (take (count this) s))))
 
 (defn str-drop
-  "Dumbply drops t from s."
+  "Dumbly drops t from s."
   [s t] (join (drop (count s) t)))
 
 
@@ -42,14 +42,13 @@
   [line]
   (let [[name,rest-of-line] (split-with (complement #{\<}) line)
         [email,date-raw] (split-with (complement #{\>}) (join rest-of-line))
-        date-str (join (take-while (partial not= \space)
-                                   (trim (join (drop 2 date-raw)))))
-        date (when (not (empty? date-str))
-               (java.util.Date. (* 1000 (Integer/parseInt date-str))))]
-    
+        [_, date-str, timezone] (split (join date-raw) #" ")]
     {:name  (trim (join name)),
      :email (trim (join (drop 1 email)))
-     :date date}))
+     :date (when (not (empty? date-str))
+               (java.util.Date. (* 1000 (Integer/parseInt date-str))))
+     :timezone timezone
+     }))
 
 (defn parse-headers
   "Given a list of the headers of the commit message, this parses and
@@ -69,8 +68,18 @@
      :author author
      :committer   committer}))
 
-(defn parse-change [line]
-  line)
+(defn parse-diff [raw]
+  (let [lines (split raw #"\n")
+        file (-> (first lines)
+                 (split #" ")
+                 first
+                 ((partial drop 2))
+                 join)
+        new? (begins-with-this-string? "new file mode" (second lines))]
+    {:file file
+     :new? new?
+     :diff (join "\n" (drop-while (complement (partial begins-with-this-string? "@@")) lines)) 
+     }))
 
 (def commit-message-metainfo #{"Signed-off-by" "Cc" "Reported-by" "Acked-by"
                                "Tested-by" "Reviewed-by" "From"})
@@ -90,8 +99,12 @@
                    {key parsed-lines}))        
         metainfo (map finder commit-message-metainfo)
 
-        diffs (map parse-change (drop 1 (split (join "\n" diff-raw ) #"\ndiff --git ")))]
-    {:message (filter (complement commit-message-metainfo)
+        diffs (map parse-diff (drop 1 (split (join "\n" diff-raw ) #"\ndiff --git ")))]
+    {:message (filter (fn [s]
+                        (not (some
+                              (fn [t] (begins-with-this-string? (str t ":") s))
+                              commit-message-metainfo))
+                        )
                       cleaned-message-lines)
      :diffs diffs
      :people-mentioned (merge (apply merge metainfo))}))
