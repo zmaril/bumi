@@ -1,6 +1,6 @@
-# linux-titan
+# bumi 
 
-A Clojure library designed to ... well, that part is up to you.
+A project to [make you excited](https://www.youtube.com/watch?v=DwDefPNiAvg).
 
 ## Usage
 
@@ -8,6 +8,6 @@ FIXME
 
 ## License
 
-Copyright © 2013 FIXME
+Copyright © 2013 Zack Maril
 
-Distributed under the Eclipse Public License, the same as Clojure.
+Distributed under the MIT license. 
