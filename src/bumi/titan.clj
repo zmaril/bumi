@@ -7,10 +7,8 @@
 
 (defn start []
   (println "Opening titan...")  
-  (g/open {:storage {:backend "embeddedcassandra"
-                     :hostname "localhost"
-                     :cassandra-config-dir
-                     "file:///Users/zackmaril/Projects/experiments/bumi/resources/cassandra.yaml"}})
+  (g/open {:storage {:backend "cassandra"
+                     :hostname "localhost"}})
 
   (println "Checking for keys and labels...")
   (g/transact!
@@ -30,7 +28,7 @@
 
    ;;File types
    (t/create-vertex-key-once :filename String
-                             {:indexed true})
+                             {:indexed true :unique true})
 
    
    ;;Labels

@@ -14,7 +14,7 @@
   commits on the current branch."
   [dir]
   (-> (with-sh-dir dir
-        (sh "git" "rev-list" "--remotes" "-n 200"))
+        (sh "git" "rev-list" "--remotes" "-n 5"))
       (:out)
       (clojure.string/split #"\n")))
 
@@ -35,20 +35,24 @@
 
 
 (defn parse-name
-  "Given a line like the following:
-   Linus Torvalds <torvalds@linux-foundation.org> 1359507746 +1100
-   It returns a map with the author's name, email, and date.
-   If the date isn't included, then it will be nil."
+  "Given a line like the following: Linus Torvalds
+   <torvalds@linux-foundation.org> 1359507746 +1100
+   It returns a map with the author's name, email,
+   and date. If the date isn't included, then it will
+   be nil."
   [line]
+  (println line)
   (let [[name,rest-of-line] (split-with (complement #{\<}) line)
         [email,date-raw] (split-with (complement #{\>}) (join rest-of-line))
         [_, date-str, timezone] (split (join date-raw) #" ")]
     {:name  (trim (join name)),
      :email (trim (join (drop 1 email)))
-     :date (when (not (empty? date-str))
-               (java.util.Date. (* 1000 (Integer/parseInt date-str))))
-     :timezone timezone
-     }))
+     ;;This email is tough
+     ;;stable <stable@vger.kernel.org> [v3.3]
+     :date (try (when (not (empty? date-str))
+                  (java.util.Date. (* 1000 (Integer/parseInt date-str))))
+                (catch Exception e (println e) nil))
+     :timezone timezone}))
 
 (defn parse-headers
   "Given a list of the headers of the commit message, this parses and
