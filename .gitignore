@@ -9,3 +9,16 @@ pom.xml
 .lein-failures
 .lein-plugins
 bigbumigraph
+
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+.elc
+auto-save-list
+tramp
+.\#*
+
+# Org-mode
+.org-id-locations
+*_archive

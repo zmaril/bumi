@@ -5,8 +5,6 @@
             [hermes.vertex :as v]
             [hermes.edge :as e]))
 
-(def linux-src-dir "/Users/zackmaril/Projects/experiments/linux")
-
 ;;All of the connect-commit-to[x] happen inside of a transact! anyway
 (defn connect-commit-to-diff [commit-node diff]
   (let [diff-node (first (v/upsert! :filename {:filename (:file diff)}))]
@@ -18,12 +16,14 @@
 
 (defn connect-commit-to-people-mentioned
   [commit-node [key people]]
-;;  (println key people)
-  )
+  (doseq [person people]
+    (let [person-node (first (v/upsert! :name (dissoc person :date :timezone)))]
+      (e/upconnect! commit-node person-node (name key)))))
 
 (defn load-commit-into-titan [{:keys [people-mentioned diffs message
                                       hash parents author committer] :as commit}]
-  (g/transact!
+  (g/retry-transact!
+   3 100
    (let [author-node    (first (v/upsert! :name (assoc author   :type "person")))
          committer-node (first (v/upsert! :name (assoc committer :type "person")))
          commit-node    (first (v/upsert! :hash {:type "commit"
@@ -35,14 +35,16 @@
        (connect-commit-to-diff commit-node diff))
      (doseq [parent parents]
        (connect-commit-to-parent commit-node parent))
-     (doseq [person people-mentioned]
-       (connect-commit-to-people-mentioned commit-node person))))
-  (println "Loaded " hash))
+     (doseq [type-of-mention people-mentioned]
+       (connect-commit-to-people-mentioned commit-node type-of-mention))))
+  (println "Loaded " hash)
+;;  (try (catch Exception e (println "ERROR loading " hash) (println
+;  e)))
+  )
 
 (defn -main []
   (titan/start)
-  (let [rev-list (git/produce-rev-list linux-src-dir)
-        commits (map git/parse-commit-from-hash rev-list)]
-    (doseq [commit commits] (load-commit-into-titan commit)))
+  (doall (pmap (comp load-commit-into-titan git/parse-commit-from-hash)
+               (git/produce-rev-list)))
   (println "Success")
   (System/exit 0))

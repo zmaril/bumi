@@ -1,5 +1,6 @@
 (ns bumi.titan
-  (:use [clojure.java.shell :only (sh with-sh-dir)])
+  (:use [clojure.java.shell :only (sh with-sh-dir)]
+        [bumi.config :only (graph-config)])
   (:require [hermes.core :as g]
             [hermes.vertex :as v]
             [hermes.edge :as e]
@@ -7,8 +8,7 @@
 
 (defn start []
   (println "Opening titan...")  
-  (g/open {:storage {:backend "cassandra"
-                     :hostname "localhost"}})
+  (g/open graph-config)
 
   (println "Checking for keys and labels...")
   (g/transact!

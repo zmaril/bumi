@@ -1,20 +1,20 @@
 (ns bumi.git
   (:use [clojure.java.shell :only (sh with-sh-dir)]
         [clojure.string :only (join split trim)]
-        ))
+        [bumi.config :only (git-root-dir)]))
 
 (defn show-commit
   "Given a SHA-1 hash, show-commit fecthes the raw commit from git."
   [hash]  
-  (with-sh-dir "/Users/zackmaril/Projects/experiments/linux"
+  (with-sh-dir git-root-dir
     (sh "git" "show" hash "--no-abbrev-commit" "--format=raw")))
 
 (defn produce-rev-list
   "Given a source directory, this fn produes the entire list of
   commits on the current branch."
-  [dir]
-  (-> (with-sh-dir dir
-        (sh "git" "rev-list" "--remotes" "-n 5"))
+  []
+  (-> (with-sh-dir git-root-dir
+        (sh "git" "rev-list" "--remotes"))
       (:out)
       (clojure.string/split #"\n")))
 
@@ -41,17 +41,18 @@
    and date. If the date isn't included, then it will
    be nil."
   [line]
-  (println line)
   (let [[name,rest-of-line] (split-with (complement #{\<}) line)
         [email,date-raw] (split-with (complement #{\>}) (join rest-of-line))
         [_, date-str, timezone] (split (join date-raw) #" ")]
     {:name  (trim (join name)),
      :email (trim (join (drop 1 email)))
-     ;;This email is tough
+     ;;This email is tough to parse
      ;;stable <stable@vger.kernel.org> [v3.3]
      :date (try (when (not (empty? date-str))
                   (java.util.Date. (* 1000 (Integer/parseInt date-str))))
-                (catch Exception e (println e) nil))
+                (catch Exception e
+                  (println e)
+                  (println line) nil))
      :timezone timezone}))
 
 (defn parse-headers
@@ -114,7 +115,8 @@
 
 (defn parse-commit-from-hash
   "From the hash, this goes and parses the commit into a usable
-  format." [hash]
+  format."
+  [hash]
   (let [raw-commit (-> hash show-commit :out)
         lines (clojure.string/split raw-commit #"\n")
         [headers, body] (split-with (complement (partial begins-with-n-spaces? 4)) lines)]    
