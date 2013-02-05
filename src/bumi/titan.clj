@@ -13,22 +13,29 @@
   (println "Checking for keys and labels...")
   (g/transact!
    ;;Types
-   (t/create-vertex-key-once :type String)
+   (t/create-vertex-key-once :type String {:functional true})
 
    ;;Person types
    (t/create-vertex-key-once :name String
-                             {:indexed true})
+                             {:indexed true
+                              :functional true})
+   
    (t/create-vertex-key-once :email String
-                             {:indexed true})
+                             {:indexed true
+                              :functional true})
 
    ;;Commit types
    (t/create-vertex-key-once :hash String
-                             {:indexed true :unique true})
-   (t/create-vertex-key-once :message String)
+                             {:indexed true
+                              :unique true
+                              :functional true})
+   (t/create-vertex-key-once :message String {:functional true})
 
    ;;File types
    (t/create-vertex-key-once :filename String
-                             {:indexed true :unique true})
+                             {:indexed true
+                              :unique true
+                              :functional true})
 
    
    ;;Labels
@@ -44,13 +51,13 @@
    ;;Person -> Commit
    (t/create-edge-label-once :committed)
    (t/create-edge-label-once :authored)
-   (t/create-vertex-key-once :committed)
+   (t/create-vertex-key-once :committed {:functional true})
    
    ;;Commit -> commit
    (t/create-edge-label-once :parent-of)
    
    ;;Commit -> File
    (t/create-edge-label-once :changed)
-   (t/create-vertex-key-once :new? Boolean)
-   (t/create-vertex-key-once :diff String))  
+   (t/create-vertex-key-once :new? Boolean {:functional true})
+   (t/create-vertex-key-once :diff String  {:functional true}))  
   (println "All set up! WAAHHOOOOOO!"))

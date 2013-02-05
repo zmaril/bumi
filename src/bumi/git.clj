@@ -1,22 +1,24 @@
 (ns bumi.git
+  (:require [clojure.string :as s])
   (:use [clojure.java.shell :only (sh with-sh-dir)]
-        [clojure.string :only (join split trim)]
         [bumi.config :only (git-root-dir)]))
 
-(defn show-commit
-  "Given a SHA-1 hash, show-commit fecthes the raw commit from git."
-  [hash]  
-  (with-sh-dir git-root-dir
-    (sh "git" "show" hash "--no-abbrev-commit" "--format=raw")))
+(defn git [& cmds]
+  (->> (apply sh (cons "git" cmds))
+       (with-sh-dir git-root-dir)
+       (:out)))
+
+(defn git-show-commit
+  "Given a SHA-1 hash, git-show-commit fetchs the raw commit from git."
+  [hash]
+  (git "show" hash "--no-abbrev-commit" "--format=raw"))
 
 (defn produce-rev-list
   "Given a source directory, this fn produes the entire list of
   commits on the current branch."
   []
-  (-> (with-sh-dir git-root-dir
-        (sh "git" "rev-list" "--remotes"))
-      (:out)
-      (clojure.string/split #"\n")))
+  (-> (git "rev-list" "--all" "-n200")
+      (s/split #"\n")))
 
 (defn begins-with-n-spaces?
   "Predicate asking whether s begins with n spaces."
@@ -27,12 +29,7 @@
 (defn begins-with-this-string?
   "Predicate asking whether this string begins with s string."
   [this s]
-  (= this (join (take (count this) s))))
-
-(defn str-drop
-  "Dumbly drops t from s."
-  [s t] (join (drop (count s) t)))
-
+  (= this (s/join (take (count this) s))))
 
 (defn parse-name
   "Given a line like the following: Linus Torvalds
@@ -42,10 +39,10 @@
    be nil."
   [line]
   (let [[name,rest-of-line] (split-with (complement #{\<}) line)
-        [email,date-raw] (split-with (complement #{\>}) (join rest-of-line))
-        [_, date-str, timezone] (split (join date-raw) #" ")]
-    {:name  (trim (join name)),
-     :email (trim (join (drop 1 email)))
+        [email,date-raw] (split-with (complement #{\>}) (s/join rest-of-line))
+        [_, date-str, timezone] (s/split (s/join date-raw) #" ")]
+    {:name  (s/trim (s/join name)),
+     :email (s/trim (s/join (drop 1 email)))
      ;;This email is tough to parse
      ;;stable <stable@vger.kernel.org> [v3.3]
      :date (try (when (not (empty? date-str))
@@ -59,31 +56,31 @@
   "Given a list of the headers of the commit message, this parses and
   formats into a map."
   [[commit tree & others]]
-  (let [parents (map (partial str-drop "parent ")
+  (let [parents (map #(s/replace-first "parent " % "")
                      (filter (partial begins-with-this-string? "parent") others))
         
         author-line    (first (filter (partial begins-with-this-string? "author") others))
-        author (parse-name (str-drop "author " author-line))
+        author (parse-name (s/replace-first "author " author-line ""))
         
         committer-line (first (filter (partial begins-with-this-string? "committer") others))
-        committer (parse-name (str-drop "committer " committer-line))] 
-    {:hash  (str-drop "commit " commit)
-     :tree    (str-drop "tree " tree)
+        committer (parse-name (s/replace-first "committer " committer-line ""))] 
+    {:hash  (s/replace-first "commit " commit "")
+     :tree    (s/replace-first "tree " tree "")
      :parents parents
      :author author
      :committer   committer}))
 
 (defn parse-diff [raw]
-  (let [lines (split raw #"\n")
+  (let [lines (s/split raw #"\n")
         file (-> (first lines)
-                 (split #" ")
+                 (s/split #" ")
                  first
                  ((partial drop 2))
-                 join)
+                 s/join)
         new? (begins-with-this-string? "new file mode" (second lines))]
     {:file file
      :new? new?
-     :diff (join "\n" (drop-while (complement (partial begins-with-this-string? "@@")) lines)) 
+     :diff (s/join "\n" (drop-while (complement (partial begins-with-this-string? "@@")) lines)) 
      }))
 
 (def commit-message-metainfo #{"Signed-off-by" "Cc" "Reported-by" "Acked-by"
@@ -92,20 +89,20 @@
 (defn parse-body [body]
   (let [[message-lines diff-raw] (split-with (partial begins-with-n-spaces? 4) body)
         
-        cleaned-message-lines (map clojure.string/trim message-lines)
+        cleaned-message-lines (map s/trim message-lines)
         finder (fn [meta]
                  (let [key (keyword meta)
                        selected-lines (filter
                                        (partial begins-with-this-string? meta)
                                        cleaned-message-lines)
                        parsed-lines (map (comp parse-name
-                                               (partial str-drop (str meta ": ")))
+                                               #(s/replace-first (str meta ": ") % ""))
                                          selected-lines)]
                    {key parsed-lines}))        
         metainfo (map finder commit-message-metainfo)
 
-        diffs (map parse-diff (drop 1 (split (join "\n" diff-raw ) #"\ndiff --git ")))]
-    {:message (join "\n" (filter (fn [s]
+        diffs (map parse-diff (drop 1 (s/split (s/join "\n" diff-raw ) #"\ndiff --git ")))]
+    {:message (s/join "\n" (filter (fn [s]
                                (not (some
                                      (fn [t] (begins-with-this-string? (str t ":") s))
                                      commit-message-metainfo)))
@@ -117,7 +114,7 @@
   "From the hash, this goes and parses the commit into a usable
   format."
   [hash]
-  (let [raw-commit (-> hash show-commit :out)
-        lines (clojure.string/split raw-commit #"\n")
+  (let [raw-commit (git-show-commit hash)
+        lines (s/split raw-commit #"\n")
         [headers, body] (split-with (complement (partial begins-with-n-spaces? 4)) lines)]    
     (merge (parse-headers headers) (parse-body body))))

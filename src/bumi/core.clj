@@ -36,11 +36,7 @@
      (doseq [parent parents]
        (connect-commit-to-parent commit-node parent))
      (doseq [type-of-mention people-mentioned]
-       (connect-commit-to-people-mentioned commit-node type-of-mention))))
-  (println "Loaded " hash)
-;;  (try (catch Exception e (println "ERROR loading " hash) (println
-;  e)))
-  )
+       (connect-commit-to-people-mentioned commit-node type-of-mention)))))
 
 (defn -main []
   (titan/start)
