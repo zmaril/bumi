@@ -8,8 +8,8 @@
        (with-sh-dir git-root-dir)
        (:out)))
 
-(defn git-show-commit
-  "Given a SHA-1 hash, git-show-commit fetchs the raw commit from git."
+(defn git-show-object
+  "Given a SHA-1 hash, git-show-commit fetchs the raw object from git."
   [hash]
   (git "show" hash "--no-abbrev-commit" "--format=raw"))
 
@@ -20,16 +20,12 @@
   (-> (git "rev-list" "--all" "-n200")
       (s/split #"\n")))
 
-(defn begins-with-n-spaces?
-  "Predicate asking whether s begins with n spaces."
-  [n s]
-  (=  (take n (iterate (constantly \space) \space))
-      (take n s)))
-
-(defn begins-with-this-string?
-  "Predicate asking whether this string begins with s string."
-  [this s]
-  (= this (s/join (take (count this) s))))
+(defn produce-tag-list
+  "Given a source directory, this fn produes the entire list of
+  commits on the current branch."
+  []
+  (-> (git "tag")
+      (s/split #"\n")))
 
 (defn parse-name
   "Given a line like the following: Linus Torvalds
@@ -57,12 +53,12 @@
   formats into a map."
   [[commit tree & others]]
   (let [parents (map #(s/replace-first "parent " % "")
-                     (filter (partial begins-with-this-string? "parent") others))
+                     (filter (partial re-find #"^parent") others))
         
-        author-line    (first (filter (partial begins-with-this-string? "author") others))
+        author-line    (first (filter (partial re-find #"^author") others))
         author (parse-name (s/replace-first "author " author-line ""))
         
-        committer-line (first (filter (partial begins-with-this-string? "committer") others))
+        committer-line (first (filter (partial re-find #"^committer") others))
         committer (parse-name (s/replace-first "committer " committer-line ""))] 
     {:hash  (s/replace-first "commit " commit "")
      :tree    (s/replace-first "tree " tree "")
@@ -77,23 +73,23 @@
                  first
                  ((partial drop 2))
                  s/join)
-        new? (begins-with-this-string? "new file mode" (second lines))]
+        new? (boolean (re-find #"^new file mode" (second lines)))]
     {:file file
      :new? new?
-     :diff (s/join "\n" (drop-while (complement (partial begins-with-this-string? "@@")) lines)) 
+     :diff (s/join "\n" (drop-while (complement (partial re-find "^@@")) lines)) 
      }))
 
 (def commit-message-metainfo #{"Signed-off-by" "Cc" "Reported-by" "Acked-by"
                                "Tested-by" "Reviewed-by" "From"})
 
 (defn parse-body [body]
-  (let [[message-lines diff-raw] (split-with (partial begins-with-n-spaces? 4) body)
+  (let [[message-lines diff-raw] (split-with (partial re-find #"^    ") body)
         
         cleaned-message-lines (map s/trim message-lines)
         finder (fn [meta]
                  (let [key (keyword meta)
                        selected-lines (filter
-                                       (partial begins-with-this-string? meta)
+                                       (partial re-find (re-pattern (str "^" meta)))
                                        cleaned-message-lines)
                        parsed-lines (map (comp parse-name
                                                #(s/replace-first (str meta ": ") % ""))
@@ -104,7 +100,7 @@
         diffs (map parse-diff (drop 1 (s/split (s/join "\n" diff-raw ) #"\ndiff --git ")))]
     {:message (s/join "\n" (filter (fn [s]
                                (not (some
-                                     (fn [t] (begins-with-this-string? (str t ":") s))
+                                     (fn [t] (re-find (re-pattern (str t ":")) s))
                                      commit-message-metainfo)))
                              cleaned-message-lines))
      :diffs diffs
@@ -114,7 +110,7 @@
   "From the hash, this goes and parses the commit into a usable
   format."
   [hash]
-  (let [raw-commit (git-show-commit hash)
+  (let [raw-commit (git-show-object hash)
         lines (s/split raw-commit #"\n")
-        [headers, body] (split-with (complement (partial begins-with-n-spaces? 4)) lines)]    
+        [headers, body] (split-with (complement (partial re-find #"^    ")) lines)]    
     (merge (parse-headers headers) (parse-body body))))
