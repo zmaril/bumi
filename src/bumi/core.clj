@@ -23,9 +23,11 @@
 (defn load-commit-into-titan [{:keys [people-mentioned diffs message
                                       hash parents author committer] :as commit}]
   (g/retry-transact!
-   3 100
-   (let [author-node    (first (v/upsert! :name (assoc author   :type "person")))
-         committer-node (first (v/upsert! :name (assoc committer :type "person")))
+   4 (fn [i] (* i i 100) )
+   (let [author-node    (first (titan/filtered-upsert! [:name :email]
+                                                       (assoc author   :type "person")))
+         committer-node (first (titan/filtered-upsert! [:name :email]
+                                                       (assoc committer :type "person")))
          commit-node    (first (v/upsert! :hash {:type "commit"
                                                  :hash hash
                                                  :message message}))]
@@ -38,9 +40,16 @@
      (doseq [type-of-mention people-mentioned]
        (connect-commit-to-people-mentioned commit-node type-of-mention)))))
 
+(defn load-tag-into-titan [{:keys [name tagger commit] :as tag}]
+  (g/retry-transact!
+   4 (fn [i] (* i i 100))
+   nil))
+
 (defn -main []
   (titan/start)
   (doall (pmap (comp load-commit-into-titan git/parse-commit-from-hash)
                (git/git-rev-list)))
+  (doall (pmap (comp load-tag-into-titan git/parse-tag-from-name)
+               (git/git-tag-list)))
   (println "Success")
   (System/exit 0))

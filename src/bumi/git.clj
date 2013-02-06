@@ -3,7 +3,9 @@
   (:use [clojure.java.shell :only (sh with-sh-dir)]
         [bumi.config :only (git-root-dir)]))
 
-(defn git [& cmds]
+(defn git
+  "git acts just like the git shell. Supply lines and it does things for you."
+  [& cmds]
   (->> (apply sh (cons "git" cmds))
        (with-sh-dir git-root-dir)
        (:out)))
@@ -11,12 +13,12 @@
 (defn git-show-object
   "Given a SHA-1 hash, git-show-object fetchs the raw object from git."
   [hash]
-  (git "show" hash "--no-abbrev-commit" "--format=raw"))
+  (git "show" hash "--format=raw"))
 
 (defn git-rev-list
   "Given a source directory, this fn produes the entire list of
   commits, regardless of branch and tags." []
-  (s/split-lines (git "rev-list" "--all" "-n200")))
+  (s/split-lines (git "rev-list" "--all" "-n2000")))
 
 (defn git-tag-list
   "Given a source directory, this fn produes the tags for the
@@ -71,8 +73,7 @@
         new? (boolean (re-find #"^new file mode" (second lines)))]
     {:file file
      :new? new?
-     :diff (s/join "\n" (drop-while (complement (partial re-find "^@@")) lines)) 
-     }))
+     :diff (s/join "\n" (drop-while (complement (partial re-find "^@@")) lines))}))
 
 (def commit-message-metainfo #{"Signed-off-by" "Cc" "Reported-by" "Acked-by"
                                "Tested-by" "Reviewed-by" "From"})
@@ -108,3 +109,11 @@
         lines (s/split-lines raw-commit)
         [headers, body] (split-with (complement (partial re-find #"^    ")) lines)]    
     (merge (parse-headers headers) (parse-body body))))
+
+(defn parse-tag-from-name
+  "From the hash, this goes and parses a tag into a usable
+  format."
+  [name]
+  (let [raw-tag (git-show-object name)
+        lines (s/split-lines raw-tag)]    
+    nil))

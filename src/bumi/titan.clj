@@ -6,6 +6,22 @@
             [hermes.edge :as e]
             [hermes.type :as t]))
 
+(defn filtered-upsert! [ks m]
+  "Given a list of keys and a property map, filtered-upsert! either
+   creates a new node with that property map or updates all nodes with
+   the given key value pairs to have the new properties specifiied by
+   the map. Always returns the set of vertices that were just update
+   or created. Uses the first value of ks as an index look up."
+  ;;(ensure-graph-is-transaction-safe)
+  (let [vertices (v/find-by-kv (first ks) ((first ks) m))
+        filtered (filter (fn [vertex]
+                           (every? #(= (% m) (v/get-property vertex %)) ks)) vertices)]
+    (if (empty? vertices)
+      (set [(v/create! m)])
+      (do
+        (doseq [vertex vertices] (v/set-properties! vertex m))
+        vertices))))
+
 (defn start []
   (println "Opening titan...")  
   (g/open graph-config)
