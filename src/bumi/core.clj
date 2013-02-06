@@ -41,6 +41,6 @@
 (defn -main []
   (titan/start)
   (doall (pmap (comp load-commit-into-titan git/parse-commit-from-hash)
-               (git/produce-rev-list)))
+               (git/git-rev-list)))
   (println "Success")
   (System/exit 0))
