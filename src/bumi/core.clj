@@ -41,8 +41,7 @@
        (connect-commit-to-people-mentioned commit-node type-of-mention)))))
 
 (defn load-tag-into-titan [{:keys [name tagger commit] :as tag}]
-  (g/retry-transact!
-   4 (fn [i] (* i i 100))
+  (g/retry-transact! 4 (fn [i] (* i i 100))
    nil))
 
 (defn -main []

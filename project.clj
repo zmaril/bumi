@@ -4,6 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
-                 [hermes/hermes "0.2.2"]]
+                 [hermes/hermes "0.2.2"]
+                 [me.raynes/conch "0.5.0"]]
   :jvm-opts ["-Xmx1g" "-server"]
   :main bumi.core)
