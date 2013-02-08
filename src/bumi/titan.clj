@@ -37,16 +37,23 @@
                              {:indexed true
                               :functional true})
    ;;Commit types
-   (t/create-vertex-key-once :hash String
+   (t/create-vertex-key-once :commit-hash String
                              {:indexed true
                               :unique true
                               :functional true})
+   
    (t/create-vertex-key-once :message String {:functional true})
    ;;File types
    (t/create-vertex-key-once :filename String
                              {:indexed true
                               :unique true
                               :functional true})   
+   ;;File types
+   (t/create-vertex-key-once :tag-name String
+                             {:indexed true
+                              :unique true
+                              :functional true})   
+
    ;;Labels
    ;;Commit -> Person
    (let [group (t/create-group 2 "mentioned")]
