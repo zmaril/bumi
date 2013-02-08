@@ -7,7 +7,7 @@
 (defn git-rev-list
   "Given a source directory, this fn produes the entire list of
   commits, regardless of branch and tags." []
-  (-> (sh/proc "git" "rev-list" "--all" "-n2000" :dir git-root-dir)
+  (-> (sh/proc "git" "rev-list" "--all" :dir git-root-dir)
                   (sh/stream-to-string :out)
                   s/split-lines))
 
