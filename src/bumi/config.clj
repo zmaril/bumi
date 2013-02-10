@@ -5,4 +5,6 @@
              :hostname "localhost"}})
 
 (def git-root-dir
-  "/Users/zackmaril/Projects/experiments/linux/")
+  (case (slurp "flag")
+    "laptop" "/Users/zackmaril/Projects/experiments/linux/"
+    "amazon" "/home/ec2-user/bumi"))
