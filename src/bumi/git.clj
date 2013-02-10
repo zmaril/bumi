@@ -35,6 +35,7 @@
         [_, date-str, timezone] (s/split (s/join date-raw) #" ")]
     {:name  (s/trim (s/join name)),
      :email (s/trim (s/join (drop 1 email)))
+     :type "person"
      ;;This email is tough to parse
      ;;stable <stable@vger.kernel.org> [v3.3]
      :date (try (when (not (empty? date-str))
@@ -110,10 +111,12 @@
                                 :parents     (s/split parents #" ")
                                 :author      {:name  author-name
                                               :email author-email
-                                              :date (java.util.Date. author-date)}
+                                              :date (java.util.Date. author-date)
+                                              :type "person"}
                                 :committer   {:name  committer-name
                                               :email committer-email
-                                              :date  (java.util.Date. committer-date)}}        
+                                              :date  (java.util.Date. committer-date)
+                                              :type "person"}}        
         message-information (parse-commit-body body)]
     (merge header-information
            message-information)))
@@ -147,8 +150,10 @@
                           (println e)
                           nil))]
     {:tagger {:name tagger-name
-              :email tagger-email}
+              :email tagger-email
+              :type "person"}
      :object {:commit-hash commit-hash
               :type "commit"} 
      :tag-name tag-name
-     :date date}))
+     :date date
+     :type "tag"}))

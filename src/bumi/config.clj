@@ -5,4 +5,4 @@
              :hostname "localhost"}})
 
 (def git-root-dir
-  "/home/ec2-user/linux")
+  "/Users/zackmaril/Projects/experiments/linux/")
