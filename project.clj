@@ -6,5 +6,5 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [hermes/hermes "0.2.2"]
                  [me.raynes/conch "0.5.0"]]
-  :jvm-opts ["-Xms4g" "-Xmx7g" "-d64" "-server"]
+  :jvm-opts ["-Xms1g" "-Xmx2g" "-server"]
   :main bumi.core)

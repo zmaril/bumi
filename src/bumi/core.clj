@@ -58,9 +58,18 @@
 
 (defn -main []
   (titan/start)
-  (doall (pmap (comp load-commit-into-titan git/parse-commit-from-hash)
-               (git/git-rev-list)))
-  (doall (pmap (comp load-tag-into-titan git/parse-tag-from-name)
-               (git/git-tag-list)))
+  
+  (doseq [tag (git/git-tag-list)]
+    (-> tag
+        git/parse-tag-from-name
+        load-tag-into-titan 
+        future))
+
+  (doseq [rev (git/git-rev-list)]
+    (-> rev
+        git/parse-commit-from-hash
+        load-commit-into-titan
+        future))
+  
   (println "Success")
   (System/exit 0))
