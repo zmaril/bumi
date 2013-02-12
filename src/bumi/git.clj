@@ -2,7 +2,7 @@
   (:require [clojure.string :as s]
             [me.raynes.conch.low-level :as sh])
   (:use [clojure.java.shell :only (sh with-sh-dir)]
-        [bumi.config :only (git-root-dir)]))
+        [bumi.config :only (git-root-dir debug-println)]))
 
 (defn git-rev-list
   "Given a source directory, this fn produes the entire list of
@@ -41,12 +41,12 @@
      :date (try (when (not (empty? date-str))
                   (java.util.Date. (* 1000 (Integer/parseInt date-str))))
                 (catch Exception e
-                  (println e)
-                  (println line) nil))
+                  (println "DEUG: Problem parsing the name" line e)))
      :timezone timezone}))
 
-(defn parse-diff [lines]
-  (let [file (-> (first lines)
+(defn parse-diff [raw]
+  (let [lines (s/split-lines raw)
+        file (-> (first lines)
                  (s/split #" ")
                  first
                  ((partial drop 2))
@@ -54,7 +54,7 @@
         new? (boolean (re-find #"^new file mode" (second lines)))]
     {:file file
      :new? new?
-     :diff (s/join "\n" (drop-while (complement (partial re-find "^@@")) lines))}))
+     :diff (s/join "\n" (drop-while (complement (partial re-find #"^@@")) lines))}))
 
 (defn parse-commit-body [body]
   (let [[message-lines diff-raw] (split-with (complement (partial re-find #"^diff --git")) body)
@@ -138,8 +138,7 @@
                      (s/replace-first "Date: " "")
                      (java.util.Date.))                 
                  (catch Exception e
-                   (println e)
-                   nil))
+                   (debug-println "ERROR: Problem parsing date of " tag-name)))
         ;;TODO Handle the case when the tags don't point to
         ;;commits, like when they are trees.
         commit-hash   (try
@@ -147,8 +146,7 @@
                             first                             
                             (s/replace-first "commit " ""))
                         (catch Exception e
-                          (println e)
-                          nil))]
+                          (debug-println "ERROR: Problem finding commit of " tag-name)))]
     {:tagger {:name tagger-name
               :email tagger-email
               :type "person"}

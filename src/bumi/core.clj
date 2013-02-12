@@ -1,4 +1,5 @@
 (ns bumi.core
+  (:use     [bumi.config :only (debug-println)])
   (:require [bumi.git :as git]
             [bumi.titan :as titan]
             [hermes.core :as g]
@@ -22,8 +23,9 @@
 
 (defn load-commit-into-titan [{:keys [people-mentioned diffs message
                                       commit-hash parents author committer] :as commit}]
+  (debug-println "INFO: Hash being loaded is " commit-hash)
   (try (g/retry-transact!
-        4 (fn [i] (* i i 100) )
+        4 (fn [i] (* i i 100))
         (let [author-node    (first (v/upsert! :name (assoc author    :type "person")))
               committer-node (first (v/upsert! :name (assoc committer :type "person")))
               commit-node    (first (v/upsert! :commit-hash {:type "commit"
@@ -38,9 +40,10 @@
           (doseq [type-of-mention people-mentioned]
             (connect-commit-to-people-mentioned commit-node type-of-mention))))
        (catch Exception e
-         (println "Whoops! Issues with " commit-hash))))
+         (debug-println "ERROR: Issues with loading " commit-hash e))))
 
 (defn load-tag-into-titan [{:keys [tagger object tag-name date] :as tag}]
+  (debug-println "INFO: Tag being loaded is " tag-name)
   (try
     (g/retry-transact!
      4 (fn [i] (* i i 100))
@@ -53,17 +56,16 @@
        (when tagger-node (e/upconnect! tagger-node tag-node "authored"))
        (e/upconnect! tag-node object-node "tagged")))
     (catch Exception e
-      (println "Whoops! ISSUSES with" tag-name)))
-  )
+         (debug-println "ERROR: Issues with loading " tag-name e))))
 
 (defn -main []
   (titan/start)
 
-  (doall (pmap (comp load-tag-into-titan git/parse-tag-from-name)
-               (git/git-tag-list)))
+  (doall (map (comp load-tag-into-titan git/parse-tag-from-name)
+              (git/git-tag-list)))
   
-  (doall (pmap (comp load-commit-into-titan git/parse-commit-from-hash)
-               (git/git-rev-list))) 
+  (doall (map (comp load-commit-into-titan git/parse-commit-from-hash)
+              (git/git-rev-list))) 
   
   (println "Success")
   (System/exit 0))
