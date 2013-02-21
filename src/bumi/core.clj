@@ -2,6 +2,7 @@
   (:use     [bumi.config :only (debug-println storage-dir)])
   (:require [bumi.git :as git]
             [bumi.titan :as titan]
+            [bumi.faunus :as faunus]            
             [hermes.core :as g]
             [hermes.vertex :as v]
             [hermes.edge :as e]
@@ -70,38 +71,16 @@
   (debug-println "INFO: Upload successful. WAHOOOOOOO!")
   (System/exit 0))
 
-;;TODO: Figure out how to update and reemit the xml without pulling my
-;;hair out.
-(defn update-xml-file [file]
-  (let [template-xml (xml-seq (xml/parse-str (slurp "resources/base-rexster.xml")))
-        updated-xml  (get-in template-xml [:content] file)
-        ]
-    (->>  (slurp "resources/base-rexster.xml")
-          (spit "resources/rexster.xml"))
-    (println "TODO: Make this update automatically to use the correct git-config")
-    ))
-
-(defn start-server []
-  (debug-println "INFO: Starting rexster server.")
-  (update-xml-file storage-dir)
-  (.start (Thread.
-           (fn []
-             (try (com.tinkerpop.rexster.Application/main
-                   (into-array String ["--start" "-c" "resources/rexster.xml"]))
-                  (catch Exception e (println e)))))))
-
 (defn analyze-repo []
   (debug-println "INFO: Starting analysis of repo.")
-  (debug-println "THOUGHT: This should probably do something."))
+  (faunus/start-analysis))
 
 (defn -main [& args]
   (let [task (case (first args)
                "uploader"  upload-repo
-               "server"   start-server ;;TODO This hangs, don't use it yet.
                "analysis" analyze-repo
                (fn []
                  (println "Please provide one of the following commands:")
                  (println "`lein run uploader` uploads the repo into titan.")       
-                 (println "`lein run server`   starts a rexster server.")
                  (println "`lein run analysis` runs through all of the scripts in src/bumi/analysis.")))]
     (apply task (rest args))))

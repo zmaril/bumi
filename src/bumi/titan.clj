@@ -1,6 +1,5 @@
 (ns bumi.titan
-  (:use [clojure.java.shell :only (sh with-sh-dir)]
-        [bumi.config :only (graph-config)])
+  (:use     [bumi.config :only (graph-config)])
   (:require [hermes.core :as g]
             [hermes.vertex :as v]
             [hermes.edge :as e]
