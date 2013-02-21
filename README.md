@@ -59,7 +59,8 @@ the back end because it is only one machine).
 
 This has *only* been tested with the Linux kernel. Don't think of it
 as being untested though. Rather, consider yourself a software
-explorer. You'll be discovering uncharted land.
+explorer. You'll be discovering uncharted land, chatting with the
+natives, and abusing computers all at the same time. 
 
 ## License
 
