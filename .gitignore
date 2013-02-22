@@ -24,3 +24,7 @@ tramp
 *_archive
 
 resources/rexster.xml
+analysis/*
+.DS_Store
+Rplots.pdf
+.RData

@@ -43,7 +43,7 @@
    
    (t/create-vertex-key-once :message String {:functional true})
    ;;File types
-   (t/create-vertex-key-once :filename String
+   (t/create-vertex-key-once :file String
                              {:indexed true
                               :unique true
                               :functional true})   
