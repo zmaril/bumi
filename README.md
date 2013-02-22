@@ -41,7 +41,7 @@ Titan database to be stored in.
 Set `BUMI_DEBUG` to `TRUE` to see a bunch of scary warnings about
 what's going on. 
 
-Run `lein run uploader` to upload the repo. 
+`lein run` to upload the repo. 
 
 Wait. 
 

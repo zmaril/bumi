@@ -8,6 +8,11 @@
             [hermes.edge :as e]
             [clojure.data.xml :as xml]))
 
+(def tag-index (atom 0))
+(def commit-index (atom 0))
+(def total-tags (atom 0))
+(def total-commits (atom 0))
+
 ;;All of the connect-commit-to[x] happen inside of a transact! anyway
 (defn connect-commit-to-diff [commit-node diff]
   (let [diff-node (first (v/upsert! :filename {:filename (:file diff)}))]
@@ -25,7 +30,8 @@
 
 (defn load-commit-into-titan [{:keys [people-mentioned diffs message
                                       commit-hash parents author committer] :as commit}]
-  (debug-println "INFO: Hash being loaded is " commit-hash)
+  (debug-println "INFO: Hash being loaded is " commit-hash " "
+                 (swap! commit-index inc) "/" @total-commits)
   (try (g/retry-transact!
         4 (fn [i] (* i i 100))
         (let [author-node    (first (v/upsert! :name (assoc author    :type "person")))
@@ -45,7 +51,8 @@
          (debug-println "ERROR: Issues with loading " commit-hash e))))
 
 (defn load-tag-into-titan [{:keys [tagger object tag-name date] :as tag}]
-  (debug-println "INFO: Tag being loaded is " tag-name)
+  (debug-println "INFO: Tag being loaded is " tag-name
+                 (swap! tag-index inc) "/" @total-tags)
   (try
     (g/retry-transact!
      4 (fn [i] (* i i 100))
@@ -63,24 +70,14 @@
 (defn upload-repo []
   (debug-println "INFO: Starting upload.")
   (titan/start)
-  (doall (map (comp load-tag-into-titan git/parse-tag-from-name)
-              (git/git-tag-list)))
-  
-  (doall (map (comp load-commit-into-titan git/parse-commit-from-hash)
-              (git/git-rev-list)))   
+  (let [tags (git/git-tag-list)
+        commits (git/git-rev-list)]
+    (swap! total-tags (constantly (count tags)))
+    (swap! total-commits (constantly (count commits)))
+    (doall (map (comp load-tag-into-titan git/parse-tag-from-name) tags))
+    (doall (map (comp load-commit-into-titan git/parse-commit-from-hash) commits)))    
   (debug-println "INFO: Upload successful. WAHOOOOOOO!")
   (System/exit 0))
 
-(defn analyze-repo []
-  (debug-println "INFO: Starting analysis of repo.")
-  (faunus/start-analysis))
-
 (defn -main [& args]
-  (let [task (case (first args)
-               "uploader"  upload-repo
-               "analysis" analyze-repo
-               (fn []
-                 (println "Please provide one of the following commands:")
-                 (println "`lein run uploader` uploads the repo into titan.")       
-                 (println "`lein run analysis` runs through all of the scripts in src/bumi/analysis.")))]
-    (apply task (rest args))))
+  (upload-repo))

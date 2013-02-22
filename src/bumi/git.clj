@@ -4,6 +4,7 @@
   (:use [clojure.java.shell :only (sh with-sh-dir)]
         [bumi.config :only (git-root-dir debug-println)]))
 
+
 (defn git-rev-list
   "Given a source directory, this fn produes the entire list of
   commits, regardless of branch and tags." []
@@ -41,7 +42,7 @@
      :date (try (when (not (empty? date-str))
                   (java.util.Date. (* 1000 (Integer/parseInt date-str))))
                 (catch Exception e
-                  (println "DEUG: Problem parsing the name" line e)))
+                  (debug-println "DEUG: Problem parsing the name" line e)))
      :timezone timezone}))
 
 (defn parse-diff [raw]
