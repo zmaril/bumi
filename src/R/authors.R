@@ -1,7 +1,7 @@
 labelPlotfn <- function(label){
   data <- read.table(paste("output/authors-",label,".txt",sep=""))
 
-  jpeg(paste("analysis/authors-",label,".jpg",sep=""))
+  jpeg(paste("analysis/authors/",label,".jpg",sep=""))
 
   plot(data,ann=FALSE)
 
@@ -13,7 +13,7 @@ labelPlotfn <- function(label){
 
 
   
-  jpeg(paste("analysis/authors-",label,"-log.jpg",sep=""))
+  jpeg(paste("analysis/authors/",label,"-log.jpg",sep=""))
   
   plot(data,log="xy",ann=FALSE)
   
