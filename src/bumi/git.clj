@@ -47,13 +47,13 @@
 
 (defn parse-diff [raw]
   (let [lines (s/split-lines raw)
-        file (-> (first lines)
-                 (s/split #" ")
-                 first
-                 ((partial drop 2))
-                 s/join)
+        filename (-> (first lines)
+                     (s/split #" ")
+                     first
+                     ((partial drop 2))
+                     s/join)
         new? (boolean (re-find #"^new file mode" (second lines)))]
-    {:file file
+    {:filename filename
      :new? new?
      :diff (s/join "\n" (drop-while (complement (partial re-find #"^@@")) lines))}))
 

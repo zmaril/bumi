@@ -30,5 +30,11 @@
                (join "\n"))))
   (sh/proc "R" "CMD" "BATCH" "src/R/authors.R"))
 
-(def committers-degree (frequencies (map find-degree committers)))
+(defn analysis-file-degrees []
+  (spit (str "output/file-degrees.txt")
+        (->> (seq (frequencies (map #(find-degree % "") files)))
+             (sort-by first)
+             (map (partial join " "))
+             (join "\n")))
+  (sh/proc "R" "CMD" "BATCH" "src/R/authors.R"))
 

@@ -2,7 +2,6 @@
   (:use     [bumi.config :only (debug-println storage-dir)])
   (:require [bumi.git :as git]
             [bumi.titan :as titan]
-            [bumi.faunus :as faunus]            
             [hermes.core :as g]
             [hermes.vertex :as v]
             [hermes.edge :as e]
@@ -15,8 +14,9 @@
 
 ;;All of the connect-commit-to[x] happen inside of a transact! anyway
 (defn connect-commit-to-diff [commit-node diff]
-  (let [diff-node (first (v/upsert! :filename {:filename (:file diff)}))]
-    (e/upconnect! commit-node diff-node "changed" (dissoc diff :file))))
+  (let [diff-node (first (v/upsert! :filename {:filename (:filename diff)
+                                               :type "file"}))]
+    (e/upconnect! commit-node diff-node "changed" (dissoc diff :filename))))
 
 (defn connect-commit-to-parent [commit-node parent-hash]
   (let [parent-node (first (v/upsert! :commit-hash {:commit-hash parent-hash}))]
@@ -65,7 +65,7 @@
        (when tagger-node (e/upconnect! tagger-node tag-node "authored"))
        (e/upconnect! tag-node object-node "tagged")))
     (catch Exception e
-         (debug-println "ERROR: Issues with loading " tag-name e))))
+      (debug-println "ERROR: Issues with loading " tag-name e (.getMessage e)))))
 
 (defn upload-repo []
   (debug-println "INFO: Starting upload.")
