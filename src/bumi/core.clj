@@ -1,6 +1,7 @@
 (ns bumi.core
   (:use     [bumi.config :only (debug-println storage-dir)]
-            [bumi.analysis :only (analyze-all-the-things)])
+;;            [bumi.analysis :only (analyze-all-the-things)]
+            )
   (:require [bumi.git :as git]
             [bumi.titan :as titan]
             [hermes.core :as g]
@@ -75,11 +76,10 @@
         commits (git/git-rev-list)]
     (swap! total-tags (constantly (count tags)))
     (swap! total-commits (constantly (count commits)))
-    (doall (map (comp load-tag-into-titan git/parse-tag-from-name) tags))
-    (doall (map (comp load-commit-into-titan git/parse-commit-from-hash) commits)))    
+    (doall (pmap (comp load-tag-into-titan git/parse-tag-from-name) tags))
+    (doall (pmap (comp load-commit-into-titan git/parse-commit-from-hash) commits)))    
   (debug-println "INFO: Upload successful. WAHOOOOOOO!")
   (System/exit 0))
 
 (defn -main [& args]
-  (upload-repo)
-  (analyze-all-the-things))
+  (upload-repo))

@@ -6,7 +6,8 @@
                             "/tmp/bumigraph/"))
 (def graph-config
   {:storage {:backend "berkeleyje"
-             :directory storage-dir}})
+             :directory storage-dir
+             :transactions false}})
 
 (def git-root-dir (or (env "BUMI_GIT_DIR")
                       "/Users/zackmaril/Projects/experiments/linux/"))

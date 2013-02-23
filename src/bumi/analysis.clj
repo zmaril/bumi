@@ -33,9 +33,15 @@
 
 (defn analyze-number-of-files-changed []
   (spit "output/number-of-files-changed.txt"
-        (twod-list-to-str (seq (frequencies (map #(find-degree % "changed") commits)))))
+        (join "\n" (map #(find-degree % "changed") commits)))
   (sh/proc "R" "CMD" "BATCH" "src/R/commits.R"))
 
 (defn analyze-all-the-things []
   (analyze-label-degrees)
   (analyze-number-of-files-changed))
+
+(defn diff-lengths []
+  (let [diffs (query commits (bothE (starr "changed")) (property "diff"))
+        freqs (frequencies (map count diffs))]
+    freqs))
+

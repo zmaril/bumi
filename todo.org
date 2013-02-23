@@ -1,0 +1,25 @@
+Below is a list of experiments that I would like to run: 
+
+* Derive a social graph which only includes developers 
+** How to derive this network? 
+   There are a ton of different connections via the various labels in
+   the commits. Roughly 3.5 million connections. Perhaps just a simple
+   network like the following: 
+   Put all the developers into a graph. Measure all the paths of
+   length two between every developer. Connect two developers together
+   if one of them committed or authored a commit with a message that
+   refers to the other. Or, just simply, connect all the developers
+   that have a path of length 2 with a commit in the middle. Use the
+   number of such paths as tie strength between the devs (regardless 
+   of label) (or, build a very dense graph with multiple edges between
+   devs, each edge having the date of interaction). 
+** Use Girvan-Newman Method to divide the social network into peeps. 
+    Lower half of
+    http://www.cs.cornell.edu/home/kleinber/networks-book/networks-book-ch03.pdf
+* Match maintainers to files
+  Can we derive the maintainers of a certain set of files based on the
+  structure of the graph? See the MAINTAINERS file in the Linux kernel
+  for more information. Can we make smart guesses 
+* Temporal changes
+  Calculate all of the above (as it applies) on a one month sliding
+  time scale and see how things change over time.
