@@ -1,5 +1,6 @@
 (ns bumi.core
-  (:use     [bumi.config :only (debug-println storage-dir)])
+  (:use     [bumi.config :only (debug-println storage-dir)]
+            [bumi.analysis :only (analyze-all-the-things)])
   (:require [bumi.git :as git]
             [bumi.titan :as titan]
             [hermes.core :as g]
@@ -80,4 +81,5 @@
   (System/exit 0))
 
 (defn -main [& args]
-  (upload-repo))
+  (upload-repo)
+  (analyze-all-the-things))

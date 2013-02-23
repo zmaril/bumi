@@ -25,14 +25,17 @@
                (map (partial join " "))
                (join "\n")))
 
-(defn analysis-label-degrees []
+(defn analyze-label-degrees []
   (doseq [label ["authored" "committed" "Cc" "Signed-off-by" "Acked-by" "Reported-by"]]
     (spit (str "output/authors-" label ".txt")
           (twod-list-to-str (seq (frequencies (map #(find-degree % label) people))))))
   (sh/proc "R" "CMD" "BATCH" "src/R/authors.R"))
 
-(defn analysis-number-of-files-changed []
+(defn analyze-number-of-files-changed []
   (spit "output/number-of-files-changed.txt"
         (twod-list-to-str (seq (frequencies (map #(find-degree % "changed") commits)))))
   (sh/proc "R" "CMD" "BATCH" "src/R/commits.R"))
 
+(defn analyze-all-the-things []
+  (analyze-label-degrees)
+  (analyze-number-of-files-changed))
