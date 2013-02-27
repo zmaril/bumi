@@ -9,8 +9,8 @@
   "Given a source directory, this fn produes the entire list of
   commits, regardless of branch and tags." []
   (-> (sh/proc "git" "rev-list" "--all" :dir git-root-dir)
-                  (sh/stream-to-string :out)
-                  s/split-lines))
+      (sh/stream-to-string :out)
+      s/split-lines))
 
 (defn git-tag-list
   "Given a source directory, this fn produes the entire list of
@@ -40,7 +40,7 @@
      ;;This email is tough to parse
      ;;stable <stable@vger.kernel.org> [v3.3]
      :date (try (when (not (empty? date-str))
-                  (java.util.Date. (* 1000 (Integer/parseInt date-str))))
+                  (.getTime (java.util.Date. (* 1000 (Integer/parseInt date-str)))))
                 (catch Exception e
                   (debug-println "DEUG: Problem parsing the name" line e)))
      :timezone timezone}))
@@ -97,7 +97,7 @@
   "From the hash, this goes and parses the commit into a usable
   format."
   [hash]
-  (let [[commit-hash tree-hash parents
+  (let [[hash tree-hash parents
          author-name author-email author-date
          committer-name committer-email committer-date
          & body]
@@ -107,16 +107,16 @@
             (sh/stream-to-string :out)
             s/split-lines)
 
-        header-information     {:commit-hash commit-hash
+        header-information     {:hash hash
                                 :tree        tree-hash
                                 :parents     (s/split parents #" ")
                                 :author      {:name  author-name
                                               :email author-email
-                                              :date (java.util.Date. author-date)
+                                              :date (.getTime (java.util.Date. author-date))
                                               :type "person"}
                                 :committer   {:name  committer-name
                                               :email committer-email
-                                              :date  (java.util.Date. committer-date)
+                                              :date  (.getTime (java.util.Date. committer-date))
                                               :type "person"}}        
         message-information (parse-commit-body body)]
     (merge header-information
@@ -137,12 +137,13 @@
                  (-> (filter (partial re-find #"^Date:") other-lines)
                      first
                      (s/replace-first "Date: " "")
-                     (java.util.Date.))                 
+                     (java.util.Date.)
+                     (.getTime))                 
                  (catch Exception e
                    (debug-println "ERROR: Problem parsing date of " tag-name)))
         ;;TODO Handle the case when the tags don't point to
         ;;commits, like when they are trees.
-        commit-hash   (try
+        hash   (try
                         (-> (filter (partial re-find #"^commit") other-lines)
                             first                             
                             (s/replace-first "commit " ""))
@@ -151,7 +152,7 @@
     {:tagger {:name tagger-name
               :email tagger-email
               :type "person"}
-     :object {:commit-hash commit-hash
+     :object {:hash hash
               :type "commit"} 
      :tag-name tag-name
      :date date

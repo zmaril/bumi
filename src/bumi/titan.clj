@@ -5,68 +5,73 @@
             [hermes.edge :as e]
             [hermes.type :as t]))
 
-(defn filtered-upsert! [ks m]
-  "Given a list of keys and a property map, filtered-upsert! either
-   creates a new node with that property map or updates all nodes with
-   the given key value pairs to have the new properties specifiied by
-   the map. Always returns the set of vertices that were just update
-   or created. Uses the first value of ks as an index look up."
-  ;;(ensure-graph-is-transaction-safe)
-  (let [vertices (v/find-by-kv (first ks) ((first ks) m))
-        filtered (filter (fn [vertex]
-                           (every? #(= (% m) (v/get-property vertex %)) ks)) vertices)]
-    (if (empty? vertices)
-      (set [(v/create! m)])
-      (do
-        (doseq [vertex vertices] (v/set-properties! vertex m))
-        vertices))))
-
 (defn start []
   (println "Opening titan...")  
   (g/open graph-config)
   (println "Checking for keys and labels...")
   (g/transact!
    ;;Types
-   (t/create-vertex-key-once :type String {:functional true})
-   ;;Person types
+   ;;"person","commit","file","tag"
+   (t/create-vertex-key-once :type String
+                             {:functional true
+                              :indexed true})
+   ;;Person name
+   ;;"Linus Torvalds"
    (t/create-vertex-key-once :name String
                              {:indexed true
-                              :functional true})   
+                              :unique true
+                              :functional true})
+   ;;Person email
+   ;;"linus@torvalds.org"
+   ;;Note: Do not make this unique. It will break everything because
+   ;;of the following. 
+   ;;INFO: Hash being loaded is  b9149729ebdcfce63f853aa54a404c6a8f6ebbf3   18 / 349693
+   ;;author {:name Ian Campbell, :email Ian.Campbell@citrix.com, :date 1360194098000, :type person}
+   ;;committer {:name David S. Miller, :email davem@davemloft.net, :date 1360297769000, :type person}
+   ;;Mentioned {:name Jan Beulich, :email JBeulich@suse.com, :type person, :date nil, :timezone nil}
+   ;;Mentioned {:name Ian Campbell, :email ian.campbell@citrix.com, :type person, :date nil, :timezone nil}
+
    (t/create-vertex-key-once :email String
                              {:indexed true
+
                               :functional true})
-   ;;Commit types
-   (t/create-vertex-key-once :commit-hash String
+   ;;Commit hash
+   ;;"990c6bebda133c5f0b1d33682245f611ffc02e6b"
+   (t/create-vertex-key-once :hash String
                              {:indexed true
-                              :unique true
+                              :unique true                              
                               :functional true})
-   
-   (t/create-vertex-key-once :message String {:functional true})
-   ;;File types
+   ;;Commit message
+   ;;"Example message"
+   (t/create-vertex-key-once :message String
+                             {:functional true})
+   ;;File name
+   ;;"/src/projects.clj"
    (t/create-vertex-key-once :filename String
                              {:indexed true
-                              :unique true
+                              :unique true                              
                               :functional true})   
-   ;;File types
+   ;;Tag name
+   ;;"rc-0.14"
    (t/create-vertex-key-once :tag-name String
                              {:indexed true
-                              :unique true
+                              :unique true                              
                               :functional true})   
 
-   ;;Labels
    ;;Commit -> Person
-   (let [group (t/create-group 2 "mentioned")]
-     (t/create-edge-label-once :Reviewed-by {:group group})
-     (t/create-edge-label-once :Reported-by {:group group})
-     (t/create-edge-label-once :Tested-by {:group group})
-     (t/create-edge-label-once :Acked-by {:group group})
-     (t/create-edge-label-once :From {:group group}))   
+   (let [mentioned (t/create-group 2 "mentioned")]
+     (t/create-edge-label-once :reviewed-by {:group mentioned})
+     (t/create-edge-label-once :reported-by {:group mentioned})
+     (t/create-edge-label-once :tested-by   {:group mentioned})
+     (t/create-edge-label-once :acked-by    {:group mentioned})
+     (t/create-edge-label-once :from        {:group mentioned}))   
    ;;Person -> Commit
    (t/create-edge-label-once :committed)
    (t/create-edge-label-once :authored)
-   (t/create-vertex-key-once :committed {:functional true})   
-   ;;Commit -> commit
-   (t/create-edge-label-once :parent-of)   
+   ;;When the person authored or committed the commit. 
+   (t/create-vertex-key-once :date Long {:functional true})
+   ;;Commit -> Commit
+   (t/create-edge-label-once :child-of)   
    ;;Commit -> File
    (t/create-edge-label-once :changed)
    (t/create-vertex-key-once :new? Boolean {:functional true})
