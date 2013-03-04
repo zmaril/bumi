@@ -27,10 +27,11 @@
 (defn connect-commit-to-diff [commit-node diff]
   (let [diff-node (unique-upsert! :filename {:filename (:filename diff)
                                              :type "file"})]
-    (e/upconnect! commit-node diff-node "changed" (dissoc diff :filename))))
+    (e/upconnect! commit-node diff-node "changed" (dissoc diff :filename :diff))))
 
 (defn connect-commit-to-parent [commit-node parent-hash]
-  (let [parent-node (unique-upsert! :hash {:hash parent-hash})]
+  (let [parent-node (unique-upsert! :hash {:hash parent-hash
+                                           :type "commit"})]
     (e/upconnect! commit-node parent-node "child-of")))
 
 (defn connect-commit-to-people-mentioned
@@ -56,7 +57,8 @@
                                                        (dissoc :date :timezone)))
               commit-node    (unique-upsert! :hash {:type "commit"
                                                     :hash hash
-                                                    :message message})]
+;;                                                    :message message
+                                                    })]
           (e/upconnect! author-node commit-node "authored" {:date (:date author)})
           (e/upconnect! committer-node commit-node "committed" {:date (:date committer)})
           (doseq [diff diffs]
