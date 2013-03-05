@@ -2,7 +2,8 @@
 
 Bumi takes any project stored in git and loads it into a
 [Titan graph database](http://thinkaurelius.github.com/titan/). A
-variety of basic analysis tools are provided via R scripts.
+growing variety of analysis tools are provided via Faunus and R
+scripts.
 
 [Wahooo](https://www.youtube.com/watch?v=DwDefPNiAvg)!
 
@@ -22,8 +23,9 @@ put this up on github.
 So far Bumi has been used to load the Linux kernel into a Titan
 database. It seems to work, but I'm tweaking the code and making all
 this up as I go. I've included as part of this pipeline some analysis
-tools I've built in R. If your project doesn't have Linux style commit
-messages, then some of the graphs produced will be empty for you. 
+tools I've built with Faunus and R. If your project doesn't have Linux
+style commit messages, then some of the graphs produced will be quite
+boring. 
 
 ### Getting started 
 
@@ -36,18 +38,12 @@ Clone bumi locally.
 
 Set `BUMI_GIT_DIR` in bash to the git project you want to load. 
 
-Set `BUMI_STORAGE_DIR` in bash to the directory you want the
-Titan database to be stored in. 
+Set `BUMI_FAUNUS_DIR` in bash to the location of faunus. 
 
 Set `BUMI_DEBUG` to `TRUE` to see a bunch of scary warnings about
 what's going on. 
 
-Run the following in the root dir of bumi:
-`mkdir -p output analysis/{authors,commits}`
-
-`lein run` to upload the repo. 
-
-Wait a few days. 
+Use the `bumi` bash file to do stuff. 
 
 Yell at me if it doesn't work. 
 
@@ -60,6 +56,11 @@ the Linux kernel loads within a day or so. I doubt you will find a
 project with more history than the Linux kernel. (I've had success
 using a Cassandra back end and pmap, but I decided to use BerkelyDB as
 the back end because it is only one machine). 
+
+Bumi doesn't actually upload any of the commit messages or code into
+Titan. It was affecting performance and storage and I have no
+intention of using the actual content of the messages or commits
+anytime soon. 
 
 This has *only* been tested with the Linux kernel. Don't think of it
 as being untested though. Rather, consider yourself a software

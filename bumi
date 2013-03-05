@@ -1,5 +1,9 @@
+#!/usr/bin/env bash
+
 curr=`pwd`
 reports=("basic" "notbasic")
+
+mkdir -p output analysis/{authors,commits,people}
 
 if [ "$1" = "--upload" ]; then
     echo "Starting repo upload!"
@@ -27,13 +31,13 @@ elif [ "$1" = "--prettify" ]; then
 elif [ "$1" = "--full-analyze" ]; then    
     for i in ${reports[@]}; do
         if [ "$2" = "$i" ]; then
-            ./bumi.sh --analyze $2
-            ./bumi.sh --prettify $2
+            ./bumi --analyze $2
+            ./bumi --prettify $2
         fi
     done
 
 elif [ "$1" = "help" ]; then 
     cat resources/man.txt
 else
-./bumi.sh help
+./bumi help
 fi

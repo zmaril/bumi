@@ -2,8 +2,6 @@
 
 (def env (into {} (System/getenv)))
 
-(def storage-dir (or (env "BUMI_STORAGE_DIR")
-                            "/tmp/bumigraph/"))
 (def graph-config
   {:storage {:backend "cassandra"
              :hostname "localhost"}})
