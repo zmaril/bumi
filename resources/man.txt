@@ -1,0 +1,12 @@
+usage: bumi [--upload | --analyze <report>][--prettify <report>][--full-analyze <report>][--help]
+
+--upload - Upload the git graph into Titan backed by Cassandra.
+--analyze - Run faunus to find information for the given <report>. 
+--prettify - Use R to generate the images/texts for the given <report>. 
+--full-analyze - run both `--analysis` and `--prettify` for the given <report>.
+--help - display this message.
+
+Expected variables: 
+BUMI_GIT_DIR - The git repository to be analyzed. 
+BUMI_FAUNUS_DIR - The root directory of Faunus. 
+BUMI_DEBUG (optional) - Boolean about whether or not to print debug information. 
