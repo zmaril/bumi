@@ -1,5 +1,5 @@
 (ns bumi.core
-  (:use     [bumi.config :only (debug-println storage-dir)])
+  (:use     [bumi.config :only (debug-println)])
   (:require [bumi.git :as git]
             [bumi.titan :as titan]
             [hermes.core :as g]

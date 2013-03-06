@@ -1,6 +1,7 @@
 usage: bumi [--upload | --analyze <report>][--prettify <report>][--full-analyze <report>][--help]
 
 --upload - Upload the git graph into Titan backed by Cassandra.
+--spitseq - Generate a SequenceFile for Faunus/Hadoop to use. 
 --analyze - Run faunus to find information for the given <report>. 
 --prettify - Use R to generate the images/texts for the given <report>. 
 --full-analyze - run `--analysis` and then `--prettify` for the given <report>.
