@@ -4,8 +4,9 @@ inputData <- paste(Sys.getenv("BUMI_FAUNUS_DIR"),"/output/number-of-committed/si
 
 data <- read.table(inputData,col.names=c("degrees"))
 
-m<-ggplot(data,aes(x=degrees))
-m+geom_histogram(binwidth=1)
+m<-ggplot(data,aes(x=degrees))+labs(title="Histogram of number of commits committed per person")
+m<-m+geom_histogram(binwidth=1)
+m<-m+scale_y_sqrt()+scale_x_sqrt()
 ggsave("analysis/people/number-of-commits.jpg")
 
 
@@ -13,6 +14,7 @@ inputData <- paste(Sys.getenv("BUMI_FAUNUS_DIR"),"/output/number-of-authored/sid
 
 data <- read.table(inputData,col.names=c("degrees"))
 
-m<-ggplot(data,aes(x=degrees))
-m+geom_histogram(binwidth=1)
+m<-ggplot(data,aes(x=degrees))+labs(title="Histogram of number of commits authored per person")
+m<-m+geom_histogram(binwidth=1)
+m<-m+scale_y_sqrt()+scale_x_sqrt()
 ggsave("analysis/people/number-of-authored.jpg")
