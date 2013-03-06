@@ -1,21 +1,28 @@
 #!/usr/bin/env bash
 
-curr=`pwd`
+export bumi_curr=`pwd`
 reports=("basic" "notbasic")
 
-mkdir -p output analysis/{authors,commits,people}
+mkdir -p analysis/{authors,commits,people}
 
 if [ "$1" = "--upload" ]; then
     echo "Starting repo upload!"
     lein run
+    ./bumi --spitseq
 
+elif [ "$1" = "--spitseq" ]; then
+    echo "Spitting seq!"
+    cd $BUMI_FAUNUS_DIR
+    bin/gremlin.sh -e $bumi_curr/src/faunus/seqfile.groovy
+    cd $bumi_curr
+    
 elif [ "$1" = "--analyze" ]; then
     for i in ${reports[@]}; do
         if [ "$2" = "$i" ]; then
             echo "Running faunus to analyze the basic properties."        
             cd $BUMI_FAUNUS_DIR
-            bin/gremlin.sh -e $curr/src/faunus/$2.groovy
-            cd $curr
+            bin/gremlin.sh -e $bumi_curr/src/faunus/$2.groovy
+            cd $bumi_curr
         fi
     done
 
