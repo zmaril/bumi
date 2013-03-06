@@ -30,7 +30,8 @@ boring.
 ### Getting started 
 
 Grab a largish instance on AWS and install git, R, leiningen, etc.
-until everything works. 
+until everything works. That means going in and installing `ggplot2`
+for R as well. 
 
 Clone your project locally. 
 
@@ -51,11 +52,12 @@ Yell at me if it doesn't work.
 
 Watch out for binaries and big blobs.
 
-I've turned off parallelization because it messes with the locks, but
+I've turned off parallelization because there are bugs, but
 the Linux kernel loads within a day or so. I doubt you will find a
 project with more history than the Linux kernel. (I've had success
 using a Cassandra back end and pmap, but I decided to use BerkelyDB as
-the back end because it is only one machine). 
+the back end because it is only one machine). TODO: check if it still
+breaks after turning off diff's and message's. 
 
 Bumi doesn't actually upload any of the commit messages or code into
 Titan. It was affecting performance and storage and I have no
@@ -68,7 +70,8 @@ explorer. You'll be discovering uncharted land, chatting with the
 natives, and abusing computers all at the same time. 
 
 Currently, the R analysis tools will fail silently if something
-doesn't work. So, watch out. 
+doesn't work. So, watch out and check the .Rout files in the root dir
+just in case. 
 
 ## License
 
