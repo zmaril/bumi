@@ -14,16 +14,6 @@
 (def total-tags (atom 0))
 (def total-commits (atom 0))
 
-;;TODO: this should be moved into hermes sometime soon. It's useful.
-;;Probably needs error checking though
-(defn unique-upsert! [& args]
-  (let [upserted (apply v/upsert! args)]
-    (if (= 1 (count upserted))
-      (first upserted)
-      (do (println args upserted)
-          (throw (Throwable.
-                  "Don't call unique-upsert! when there is more than one element returned."))))))
-
 (defn connect-commit-to-diff [commit-node diff]
   (let [diff-node (unique-upsert! :filename {:filename (:filename diff)
                                              :type "file"})]

@@ -8,9 +8,7 @@
                  ["sonatype" "https://oss.sonatype.org/content/repositories/snapshots/"]
                  ["oracle" "http://download.oracle.com/maven/"]]  
   :dependencies [[org.clojure/clojure "1.4.0"]
-                 [hermes/hermes "0.2.6"]
-                 [me.raynes/conch "0.5.0"]
-                 [com.tinkerpop.blueprints/blueprints-core "2.2.0"]                 
-                 [org.clojure/data.xml "0.0.7"]]
+                 [clj-jgit "0.3.1"]
+                 [clojurewerkz/titanium "1.0.0-alpha4-SNAPSHOT"]]
   :jvm-opts ["-Xms1g" "-Xmx2g" "-server"]
   :main bumi.core)
