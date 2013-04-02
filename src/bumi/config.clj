@@ -3,7 +3,7 @@
 (def env (into {} (System/getenv)))
 
 (def graph-config
-  {:storage {:backend "cassandra"
+  {:storage {:backend "embeddedcassandra"
              :hostname "localhost"}})
 
 (def git-root-dir (or (env "BUMI_GIT_DIR")
