@@ -13,7 +13,7 @@
   {:name  (.getName person)
    :email (.getEmailAddress person)
    :timezone (.getTimeZoneOffset person)
-   :when (.getWhen person)
+   :date (.getWhen person)
    :type "person"})
 
 (defn parse-name
@@ -25,11 +25,11 @@
    date isn't included or isn't in the correct format, then date will
    be nil." 
   [line]
-  (let [[name,rest-of-line] (split-with (partial not= \<) line)
+  (let [[main-name,rest-of-line] (split-with (partial not= \<) line)
         [email,date-raw] (split-with (partial not= \>) (s/join rest-of-line))]
     ;;This email is tough to parse
     ;;stable <stable@vger.kernel.org> [v3.3]  
-    {:name  (s/trim (s/join name)),
+    {:name  (s/trim (s/join main-name)),
      :email (s/trim (s/join (drop 1 email)))
      :type "person"}))
 
@@ -44,7 +44,7 @@
                        parsed-lines (map (comp parse-name
                                                #(s/replace-first % (str meta ": ") ""))
                                          selected-lines)]
-                   {(keyword meta) parsed-lines}))
+                   {(keyword (.toLowerCase meta)) parsed-lines}))
         metainfo (map finder commit-message-metainfo)]
     [(->> cleaned-message-lines
           (filter (fn [s] (not-any?
@@ -57,11 +57,10 @@
 ;;https://github.com/clj-jgit/clj-jgit/blob/master/src/clj_jgit/querying.clj
 (defn RevCommit->map [rev-commit]
   (let [[message, mentions] (parse-message (.getFullMessage rev-commit))]
-    {:id (.getName rev-commit)
+    {:hash (.getName rev-commit)
      :author    (PersonIdent->map (.getAuthorIdent rev-commit))
      :committer (PersonIdent->map (.getCommitterIdent rev-commit))
      :message message
      :mentions mentions
-     :changed_files (quer/changed-files repo rev-commit)
+     :changed-files (quer/changed-files repo rev-commit)
      :parents (map (memfn getName) (.getParents rev-commit))}))
-

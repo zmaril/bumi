@@ -3,8 +3,10 @@
 (def env (into {} (System/getenv)))
 
 (def graph-config
-  {:storage {:backend "embeddedcassandra"
-             :hostname "localhost"}})
+  { ;; Embedded cassandra settings
+   "storage.backend"  "embeddedcassandra"
+   "storage.cassandra-config-dir" 
+   (str "file://" (System/getProperty "user.dir")  "/resources/cassandra.yaml") }  )
 
 (def git-root-dir (or (env "BUMI_GIT_DIR")
                       "/Users/zackmaril/Projects/experiments/linux/"))
