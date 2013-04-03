@@ -8,6 +8,22 @@
             [ogre.core :as q])
   (:import (org.apache.commons.io FileUtils)))
 
+(def commit-count (atom 0))
+(def person-count (atom 0))
+(def file-count (atom 0))
+
+(defn clear-db []
+  (FileUtils/deleteDirectory (java.io.File. "/tmp/cassandra")))
+
+;;Not sure if this should be in Titanium yet
+(defn unique-find-by-kv [key value]  
+  (println key value)
+  (let [results (v/find-by-kv key value)]
+    (println results)
+    (when (< 2 (count results))
+      (throw (Throwable. "Expected no more than one result.")))
+    (first results)))
+
 (defn project-commit [{:keys [hash 
                               author
                               committer
@@ -15,50 +31,74 @@
                               mentions
                               changed-files
                               parents] :as commit}]
-  (g/transact!
-   (let [commit-node   (v/unique-upsert! :hash {:hash hash 
-                                                :message message
-                                                :type "commit"})
-         author-node    (v/unique-upsert! :name (select-keys author [:name :email :type]))
-         committer-node (v/unique-upsert! :name (select-keys committer [:name :email :type]))
+  
+  (g/transact! 
+   (let [commit-node    (unique-find-by-kv :hash hash)
+         author-node    (unique-find-by-kv :name (:name author))
+         committer-node (unique-find-by-kv :name (:name committer))
          author-edge-info    (select-keys author    [:date :timezone])
          committer-edge-info (select-keys committer [:date :timezone])]
-     (e/upconnect! author-node    :authored  commit-node author-edge-info)
-     (e/upconnect! committer-node :committed commit-node committer-edge-info)
+     ;;Connect people to commit
+     (e/connect! author-node    :authored  commit-node author-edge-info)
+     (e/connect! committer-node :committed commit-node committer-edge-info)
      (doseq [[mention-type people] mentions]
        (doseq [person people]
-         (e/upconnect! commit-node mention-type (v/unique-upsert! :name person))))
-     (doseq [[filename action] changed-files]
-       (let [file-node (v/unique-upsert! :filename {:filename filename
-                                                    :type "file"})
-             action-label        (condp = action
-                                   :edit :editted
-                                   :new  :created)]
-         (e/upconnect! commit-node action-label file-node)))
-     (doseq [parent-hash parents]
-         (e/upconnect! commit-node :child-of (v/unique-upsert! :hash {:hash parent-hash
-                                                                      :type "commit"}))))))
+         (e/connect! commit-node mention-type (unique-find-by-kv :name (:name person)))))
 
-(defn clear-db []
-  (FileUtils/deleteDirectory (java.io.File. "/tmp/cassandra")))
+     ;;Connect commit to changed files
+     (doseq [[filename action] changed-files]
+       (let [file-node (unique-find-by-kv :filename filename)
+             action-label        (condp = action
+                                   :edit    :editted
+                                   :add     :created
+                                   :delete  :deleted)]
+         (e/connect! commit-node action-label file-node)))
+
+     ;;Connect commits to parents
+     (doseq [parent-hash parents]
+         (e/connect! commit-node :child-of (unique-find-by-kv :hash parent-hash))))))
+
+(defn create-person [person]
+  (clojure.pprint/pprint (:name person))
+  (g/transact! (v/create! person)))
+
+(defn create-file [filename]
+  (println (swap! file-count inc) filename)
+  (g/transact! (v/create! {:filename filename :type "file"})))
+
+(defn create-commit [commit]
+  (println (swap! commit-count inc) (:hash commit))
+  (g/transact! (v/create! commit)))
 
 (defn -main [& args]
   (clear-db)
   (start)
-  (doseq [rev rev-list]
-    (-> rev
-        RevCommit->map
-        project-commit
-        ))
-  nil)
+  (let [rev-maps  (map RevCommit->map rev-list)
+        filenames              (->> rev-maps 
+                                    (map (comp (partial map first) :changed-files))
+                                    flatten
+                                    distinct)
+        authors-and-committers (->> rev-maps
+                                    (map (juxt :author :committer))
+                                    flatten
+                                    (map #(select-keys % [:name :type])))
+        mentioned-people       (->> rev-maps                                    
+                                    (map (comp vals :mentions))                                    
+                                    flatten)
+        people (distinct (concat mentioned-people authors-and-committers))
+        commits (map #(select-keys % [:hash :type :message]) rev-maps)]
+    (dorun (pmap create-person people))
+    (dorun (pmap create-file   filenames))
+    (dorun (pmap create-commit commits))
+    (dorun (map project-commit rev-maps))
+    (println "All done!")
+    
+    ))
 
-;; (g/transact! 
-;;  (q/query (v/find-by-id (:__id__ (first vs))) 
-;;           q/<E--
-;;           (q/transform e/to-map)
-;;           q/into-vec!))
 
-;; (g/transact! 
-;;  (v/to-map (first (v/find-by-kv :name "Linus Torvalds")))
-
-;; )
+(defn repl-work []
+  (g/transact! 
+   (q/query (v/find-by-kv :hash "836dc9e3fbbab0c30aa6e664417225f5c1fb1c39") 
+            q/--E>
+            (q/transform e/to-map)
+            q/into-vec!)))

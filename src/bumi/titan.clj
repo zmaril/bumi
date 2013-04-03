@@ -74,5 +74,6 @@
    (t/create-edge-label-once :child-of)   
    ;;Commit -> File
    (t/create-edge-label-once :edited)
-   (t/create-edge-label-once :created))  
+   (t/create-edge-label-once :created)
+   (t/create-edge-label-once :deleted))  
   (println "All set up! WAAHHOOOOOO!"))
