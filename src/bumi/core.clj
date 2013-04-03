@@ -89,7 +89,7 @@
     (dorun (pmap create-person people))
     (dorun (pmap create-file   filenames))
     (dorun (pmap create-commit commits))
-    (dorun (map project-commit rev-maps))
+    (dorun (pmap project-commit rev-maps))
     (println "All done!")
     
     ))
