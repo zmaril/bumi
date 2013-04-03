@@ -76,7 +76,7 @@
         filenames              (->> rev-maps 
                                     (map (comp (partial map first) :changed-files))
                                     flatten
-                                    distinct)
+                                    set)
         authors-and-committers (->> rev-maps
                                     (map (juxt :author :committer))
                                     flatten
@@ -84,15 +84,19 @@
         mentioned-people       (->> rev-maps                                    
                                     (map (comp vals :mentions))                                    
                                     flatten)
-        people (distinct (concat mentioned-people authors-and-committers))
+        people (set (concat mentioned-people authors-and-committers))
         commits (map #(select-keys % [:hash :type :message]) rev-maps)]
+    (println "Mapping over names.")
     (dorun (pmap create-person people))
+    (println "All names loaded.")
+    (println "Mapping over files.")
     (dorun (pmap create-file   filenames))
+    (println "All files loaded.")
+    (println "Mapping over commits.")
     (dorun (pmap create-commit commits))
+    (println "All commits loaded.")
     (dorun (pmap project-commit rev-maps))
-    (println "All done!")
-    
-    ))
+    (println "All done!")))
 
 
 (defn repl-work []
