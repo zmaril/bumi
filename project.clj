@@ -10,5 +10,5 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [clj-jgit "0.3.1"]
                  [clojurewerkz/titanium "1.0.0-alpha4-SNAPSHOT"]]
-  :jvm-opts ["-Xms1g" "-Xmx2g" "-server"]
+  :jvm-opts ["-Xms1g" "-Xmx5g" "-server"]
   :main bumi.core)
