@@ -72,7 +72,7 @@
 (defn -main [& args]
   (clear-db)
   (start)
-  (let [rev-maps  (map RevCommit->map rev-list)
+  (let [rev-maps  (pmap RevCommit->map rev-list)
         filenames              (->> rev-maps 
                                     (map (comp (partial map first) :changed-files))
                                     flatten
