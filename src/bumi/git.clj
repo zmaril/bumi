@@ -10,7 +10,7 @@
                                "Tested-by" "Reviewed-by" "From"})
 
 (defn PersonIdent->map [person]
-  {:name  (.getName person)
+  {:name  (.toLowerCase (.getName person))
    :timezone (.getTimeZoneOffset person)
    :date (.getWhen person)
    :type "person"})

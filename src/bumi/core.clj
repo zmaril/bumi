@@ -72,7 +72,7 @@
 (defn -main [& args]
   (clear-db)
   (start)
-  (let [rev-maps  (take 1000 (pmap RevCommit->map rev-list))
+  (let [rev-maps   (pmap RevCommit->map rev-list)
         filenames              (->> rev-maps 
                                     (map (comp (partial map first) :changed-files))
                                     flatten
@@ -86,14 +86,14 @@
                                     flatten)
         people (set (concat mentioned-people authors-and-committers))
         commits (map #(select-keys % [:hash :type :message]) rev-maps)]
-    ;; (println "Mapping over names.")
-    ;; (dorun (pmap create-person people))
-    ;; (println "All names loaded.")
-    ;; (println "Mapping over files.")
-    ;; (dorun (pmap create-file   filenames))
-    ;; (println "All files loaded.")
-    ;; (println "Mapping over commits.")
-    ;; (dorun (pmap create-commit commits))
+    (println "Mapping over names.")
+    (dorun (pmap create-person people))
+    (println "All names loaded.")
+    (println "Mapping over files.")
+    (dorun (pmap create-file   filenames))
+    (println "All files loaded.")
+    (println "Mapping over commits.")
+    (dorun (pmap create-commit commits))
     (println "All commits loaded.")
     (dorun (pmap project-commit rev-maps))
     (println "All done!")))
