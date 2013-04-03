@@ -11,6 +11,7 @@
 (def commit-count (atom 0))
 (def person-count (atom 0))
 (def file-count (atom 0))
+(def projection-count (atom 0))
 
 (defn clear-db []
   (FileUtils/deleteDirectory (java.io.File. "/tmp/cassandra")))
@@ -18,7 +19,6 @@
 ;;Not sure if this should be in Titanium yet
 (defn unique-find-by-kv [key value]  
   (let [results (v/find-by-kv key value)]
-    (println results)
     (when (< 2 (count results))
       (throw (Throwable. "Expected no more than one result.")))
     (first results)))
@@ -30,8 +30,8 @@
                               mentions
                               changed-files
                               parents] :as commit}]
-  
-  (g/transact! 
+  (println (swap! projection-count inc) hash)
+  (g/retry-transact! 3 1000
    (let [commit-node    (unique-find-by-kv :hash hash)
          author-node    (unique-find-by-kv :name (:name author))
          committer-node (unique-find-by-kv :name (:name committer))
@@ -86,14 +86,14 @@
                                     flatten)
         people (set (concat mentioned-people authors-and-committers))
         commits (map #(select-keys % [:hash :type :message]) rev-maps)]
-    (println "Mapping over names.")
-    (dorun (pmap create-person people))
-    (println "All names loaded.")
-    (println "Mapping over files.")
-    (dorun (pmap create-file   filenames))
-    (println "All files loaded.")
-    (println "Mapping over commits.")
-    (dorun (pmap create-commit commits))
+    ;; (println "Mapping over names.")
+    ;; (dorun (pmap create-person people))
+    ;; (println "All names loaded.")
+    ;; (println "Mapping over files.")
+    ;; (dorun (pmap create-file   filenames))
+    ;; (println "All files loaded.")
+    ;; (println "Mapping over commits.")
+    ;; (dorun (pmap create-commit commits))
     (println "All commits loaded.")
     (dorun (pmap project-commit rev-maps))
     (println "All done!")))
