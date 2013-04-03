@@ -17,7 +17,6 @@
 
 ;;Not sure if this should be in Titanium yet
 (defn unique-find-by-kv [key value]  
-  (println key value)
   (let [results (v/find-by-kv key value)]
     (println results)
     (when (< 2 (count results))
@@ -59,7 +58,7 @@
          (e/connect! commit-node :child-of (unique-find-by-kv :hash parent-hash))))))
 
 (defn create-person [person]
-  (clojure.pprint/pprint (:name person))
+  (println (swap! file-count inc) (:name person))
   (g/transact! (v/create! person)))
 
 (defn create-file [filename]
