@@ -17,13 +17,16 @@ bumi.analysis=> (ns bumi.analysis
 Let's see how many commits, people, and files we have stored in Titan:
 
 ```clojure
-bumi.analysis=> (g/transact! (count (v/find-by-kv :type "commit")))
+bumi.analysis=> (def commits (g/transact! (v/find-by-kv :type "commit")))
+bumi.analysis=> (count commits)
 362159
 
-bumi.analysis=> (g/transact! (count (v/find-by-kv :type "person")))
+bumi.analysis=> (def people (g/transact! (v/find-by-kv :type "person")))
+bumi.analysis=> (count people)
 16653
 
-bumi.analysis=> (g/transact! (count (v/find-by-kv :type "file")))
+bumi.analysis=> (def files (g/transact! (v/find-by-kv :type "file")))
+bumi.analysis=> (count files)
 73061
 ```
 
@@ -78,3 +81,24 @@ bumi.analysis=> (g/transact! (q/query (v/refresh linus)
 It seems that the vast majority of files that exist or have ever
 existed inside of the Linux kernel have been effected by Linus'
 commits at some point. Neat! 
+
+Let's do some sanity checks. Every commit should only have one author
+and one committer. We'll define a useful function along the way called
+`degree-in` that we'll use to check how many edges with a certain set
+of labels are coming into a node. 
+
+```clojure
+bumi.analysis=> (defn degree-in [v & labels] (q/query v
+                                                      (#(apply q/<-- (cons % labels)))
+                                                      q/count!))
+
+bumi.analysis=> (g/transact! (->>  commits
+                                   (pmap #(degree-in % :authored))
+                                   frequencies))
+{1 362159}
+
+bumi.analysis=> (g/transact! (->>  commits
+                                   (pmap #(degree-in % :committed))
+                                   frequencies))
+{1 362159}
+```
