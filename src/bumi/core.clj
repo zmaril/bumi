@@ -1,6 +1,6 @@
 (ns bumi.core
   (:require [bumi.titan :refer (start)]
-            [bumi.analysis :refer (analyze-db)]
+;;            [bumi.analysis :refer (analyze-db)]
             [bumi.git :refer (RevCommit->map rev-list)]
             [clojurewerkz.titanium.graph :as g]
             [clojurewerkz.titanium.vertices :as v]
@@ -103,4 +103,5 @@
 (defn -main [& args]
   (case (first args)
     "load" (load-db)
-    "analyze" (analyze-db)))
+;;    "analyze" (analyze-db)
+    ))
