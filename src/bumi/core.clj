@@ -49,7 +49,7 @@
      (doseq [[filename action] changed-files]
        (let [file-node (unique-find-by-kv :filename filename)
              action-label        (condp = action
-                                   :edit    :editted
+                                   :edit    :edited
                                    :add     :created
                                    :delete  :deleted)]
          (e/connect! commit-node action-label file-node)))

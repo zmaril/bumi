@@ -62,7 +62,7 @@
      (t/create-edge-label-once :tested-by   {:group mentioned})
      (t/create-edge-label-once :acked-by    {:group mentioned})
      (t/create-edge-label-once :from        {:group mentioned})
-     (t/create-edge-label-once :cc        {:group mentioned}))   
+     (t/create-edge-label-once :cc          {:group mentioned}))   
    ;;Person -> Commit
    (t/create-edge-label-once :committed)
    (t/create-edge-label-once :authored)

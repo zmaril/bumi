@@ -58,3 +58,7 @@
     (println (g/transact! (frequencies (pmap #(degree-in  (v/refresh %) :authored)   commits))))
     (println (g/transact! (frequencies (pmap #(degree-in  (v/refresh %) :committed)  files))))
     (println (g/transact! (frequencies (pmap #(degree-in  (v/refresh %) :authored)   files))))))
+
+(q/query linus
+         (q/--> :authored)
+         q/count!)
