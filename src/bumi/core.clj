@@ -74,7 +74,7 @@
 (defn load-db []
   (clear-db)
   (start)
-  (let [rev-maps   (pmap RevCommit->map (take 1000 rev-list))
+  (let [rev-maps   (pmap RevCommit->map rev-list)
         filenames              (->> rev-maps 
                                     (map (comp (partial map first) :changed-files))
                                     flatten
