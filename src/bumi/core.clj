@@ -1,5 +1,6 @@
 (ns bumi.core
   (:require [bumi.titan :refer (start)]
+            [bumi.analysis :refer (analyze-db)]
             [bumi.git :refer (RevCommit->map rev-list)]
             [clojurewerkz.titanium.graph :as g]
             [clojurewerkz.titanium.vertices :as v]
@@ -54,8 +55,9 @@
          (e/connect! commit-node action-label file-node)))
 
      ;;Connect commits to parents
-     (doseq [parent-hash parents]
-         (e/connect! commit-node :child-of (unique-find-by-kv :hash parent-hash))))))
+     (try (doseq [parent-hash parents]
+            (e/connect! commit-node :child-of (unique-find-by-kv :hash parent-hash)))
+          (catch Exception e (println e))))))
 
 (defn create-person [person]
   (println (swap! file-count inc) (:name person))
@@ -69,10 +71,10 @@
   (println (swap! commit-count inc) (:hash commit))
   (g/transact! (v/create! commit)))
 
-(defn -main [& args]
+(defn load-db []
   (clear-db)
   (start)
-  (let [rev-maps   (pmap RevCommit->map rev-list)
+  (let [rev-maps   (pmap RevCommit->map (take 1000 rev-list))
         filenames              (->> rev-maps 
                                     (map (comp (partial map first) :changed-files))
                                     flatten
@@ -98,10 +100,7 @@
     (dorun (pmap project-commit rev-maps))
     (println "All done!")))
 
-
-(defn repl-work []
-  (g/transact! 
-   (q/query (v/find-by-kv :hash "836dc9e3fbbab0c30aa6e664417225f5c1fb1c39") 
-            q/--E>
-            (q/transform e/to-map)
-            q/into-vec!)))
+(defn -main [& args]
+  (case (first args)
+    "load" (load-db)
+    "analyze" (analyze-db)))

@@ -1,9 +1,7 @@
 # bumi 
 
 Bumi takes any project stored in git and loads it into a
-[Titan graph database](http://thinkaurelius.github.com/titan/). A
-growing variety of analysis tools are provided via Faunus and R
-scripts.
+[Titan graph database](http://thinkaurelius.github.com/titan/). 
 
 [Wahooo](https://www.youtube.com/watch?v=DwDefPNiAvg)!
 
@@ -22,16 +20,12 @@ put this up on github.
 
 So far Bumi has been used to load the Linux kernel into a Titan
 database. It seems to work, but I'm tweaking the code and making all
-this up as I go. I've included as part of this pipeline some analysis
-tools I've built with Faunus and R. If your project doesn't have Linux
-style commit messages, then some of the graphs produced will be quite
-boring. 
+this up as I go.
 
 ### Getting started 
 
 Grab a largish instance on AWS and install git, R, leiningen, etc.
-until everything works. That means going in and installing `ggplot2`
-for R as well. 
+until everything works. 
 
 Clone your project locally. 
 
@@ -39,46 +33,25 @@ Clone bumi locally.
 
 Set `BUMI_GIT_DIR` in bash to the git project you want to load. 
 
-Set `BUMI_FAUNUS_DIR` in bash to the location of faunus. 
+Run `lein run load` to load up the database. 
 
-Set `BUMI_DEBUG` to `TRUE` to see a bunch of scary warnings about
-what's going on. 
-
-Use the `bumi` bash file to do stuff. 
+Run `lein run analysis` to run whatever analysis I've been messing around with as of late.  
 
 Yell at me if it doesn't work. 
 
 ### Warnings
 
-Watch out for binaries and big blobs.
-
-I've turned off parallelization because there are bugs, but
-the Linux kernel loads within a day or so. I doubt you will find a
-project with more history than the Linux kernel. (I've had success
-using a Cassandra back end and pmap, but I decided to use BerkelyDB as
-the back end because it is only one machine). TODO: check if it still
-breaks after turning off diff's and message's. 
-
-Bumi doesn't actually upload any of the commit messages or code into
-Titan. It was affecting performance and storage and I have no
-intention of using the actual content of the messages or commits
-anytime soon. 
+Bumi doesn't actually upload any of the code into Titan. It was
+affecting performance and storage and I have no intention of using the
+actual content of the messages or commits anytime soon.
 
 This has *only* been tested with the Linux kernel. Don't think of it
 as being untested though. Rather, consider yourself a software
 explorer. You'll be discovering uncharted land, chatting with the
 natives, and abusing computers all at the same time. 
 
-Currently, the R analysis tools will fail silently if something
-doesn't work. So, watch out and check the .Rout files in the root dir
-just in case. 
-
 ## License
 
-Copyright © 2013 Zack Maril
+Copyright © 2013 [@ZackMaril](http://www.twitter.com/ZackMaril)
 
 Distributed under the MIT license. 
-
-It would be nice if you sent me a tweet,
-[@ZackMaril](http://www.twitter.com/ZackMaril). In addition,
-attribution would be nice if this were used for research. 
