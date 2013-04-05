@@ -66,13 +66,10 @@ bumi.analysis=> (g/transact! (q/query (v/refresh linus)
 So he's been directly involved in about a seventh of all the commits.
 I wonder, how many different files has he touched?
 
-;; TODO mispelled edited in the codebase. Gotta reload the database
-;; now.
-
 ```clojure
 bumi.analysis=> (g/transact! (q/query (v/refresh linus)
                                       (q/--> :authored :committed)
-                                      (q/--> :editted :deleted :created)
+                                      (q/--> :edited :deleted :created)
                                       q/dedup
                                       q/count!))
 70879
@@ -146,7 +143,7 @@ the degrees and just spit out the list of degrees for R to work with.
 bumi.analysis=> (g/transact! (pmap #(degree-out % :changed) commits))
 
 bumi.analysis=> (g/transact! (->>  commits
-                                   (pmap #(degree-out % :editted))
+                                   (pmap #(degree-out % :edited))
                                    frequencies))
 ```
 
