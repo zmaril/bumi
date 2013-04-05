@@ -50,7 +50,7 @@
        (let [file-node (unique-find-by-kv :filename filename)
              action-label        (condp = action
                                    :edit    :edited
-                                   :add     :created
+                                   :add     :added
                                    :delete  :deleted)]
          (e/connect! commit-node action-label file-node)))
 

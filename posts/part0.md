@@ -38,7 +38,7 @@ git log --pretty=format:'' | wc -l
 362158
 ```
 
-Off by one error! Close. 
+Off by one! Close though. 
 
 Now let's ask some simple questions about Linus. First we must find him.
 
@@ -135,16 +135,57 @@ pretty, otherwise we will be stuck with some kind of pointless lists
 of data. From here on out, we'll stop working with the frequencies of
 the degrees and just spit out the list of degrees for R to work with.
 
+First we'll define some useful functions for saving collections to files
 
+``` clojure
+bumi.analysis=> (defn seq->string-for-R [col]
+                  (apply str (interleave col (cycle ["\n"]))))
+
+bumi.analysis=> (defn spit-seq [filename col]
+                  (spit filename (seq->string-for-R col)))
+```
+
+Now, we can save all the sequences we are interested in. 
 
 ``` clojure
 ;; Show and use spit seq here and then display R and what not. 
 
-bumi.analysis=> (g/transact! (pmap #(degree-out % :changed) commits))
+bumi.analysis=> (spit-seq "files-edited-per-commit.txt"
+                          (g/transact! (doall (pmap #(degree-out (v/refresh %) :edited) commits))))
 
-bumi.analysis=> (g/transact! (->>  commits
-                                   (pmap #(degree-out % :edited))
-                                   frequencies))
+bumi.analysis=> (spit-seq "files-created-per-commit.txt"
+                          (g/transact! (doall (pmap #(degree-out (v/refresh %) :created) commits))))
+
+bumi.analysis=> (spit-seq "files-deleted-per-commit.txt"
+                          (g/transact! (doall (pmap #(degree-out (v/refresh %) :deleted) commits))))
+
+
 ```
 
-;; Work in progress. 
+And let's whip out some simple R scripts and see what's been going on. 
+
+``` R
+> data <- read.table("files-edited-per-commit.txt")
+> data <- as.numeric(data$V1)
+> summary(data)
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+    0.00     1.00     1.00    16.77     3.00 16250.00
+
+> data <- read.table("files-deleted-per-commit.txt")
+> data <- as.numeric(data$V1)
+> summary(data)
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max.
+   0.000    0.000    0.000    1.488    0.000 4678.000
+
+> data <- read.table("files-created-per-commit.txt")
+> data <- as.numeric(data$V1)
+> summary(data)
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max.
+    0.000     0.000     0.000     2.665     0.000 17290.000
+``` 
+
+;;TODO code for histogram of editted
+png(filename=paste0("files-edited-per-commit-histogram.png"))
+histogram <- hist(data,labels=TRUE)
+dev.off()
+
