@@ -1,6 +1,5 @@
 (ns bumi.core
   (:require [bumi.titan :refer (start)]
-;;            [bumi.analysis :refer (analyze-db)]
             [bumi.git :refer (RevCommit->map rev-list)]
             [clojurewerkz.titanium.graph :as g]
             [clojurewerkz.titanium.vertices :as v]
@@ -24,15 +23,12 @@
       (throw (Throwable. "Expected no more than one result.")))
     (first results)))
 
-(defn project-commit [{:keys [hash 
-                              author
-                              committer
-                              message
-                              mentions
-                              changed-files
-                              parents] :as commit}]
+(defn project-commit [{:as commit
+                       :keys [hash author committer message
+                              mentions changed-files parents]}]
   (println (swap! projection-count inc) hash)
-  (g/retry-transact! 3 1000
+  (g/retry-transact! 
+   3 1000
    (let [commit-node    (unique-find-by-kv :hash hash)
          author-node    (unique-find-by-kv :name (:name author))
          committer-node (unique-find-by-kv :name (:name committer))
@@ -55,9 +51,9 @@
          (e/connect! commit-node action-label file-node)))
 
      ;;Connect commits to parents
-     (try (doseq [parent-hash parents]
-            (e/connect! commit-node :child-of (unique-find-by-kv :hash parent-hash)))
-          (catch Exception e (println e))))))
+     (doseq [parent-hash parents]
+       (v/upsert! :hash {:hash parent-hash})
+       (e/connect! commit-node :child-of (unique-find-by-kv :hash parent-hash))))))
 
 (defn create-person [person]
   (println (swap! file-count inc) (:name person))
@@ -87,21 +83,23 @@
                                     (map (comp vals :mentions))                                    
                                     flatten)
         people (set (concat mentioned-people authors-and-committers))
-        commits (map #(select-keys % [:hash :type :message]) rev-maps)]
+        commits (map #(select-keys % [:hash :type :message]) rev-maps)]    
     (println "Mapping over names.")
     (dorun (pmap create-person people))
     (println "All names loaded.")
     (println "Mapping over files.")
-    (dorun (pmap create-file   filenames))
+    (dorun (pmap create-file  filenames))
     (println "All files loaded.")
     (println "Mapping over commits.")
     (dorun (pmap create-commit commits))
     (println "All commits loaded.")
     (dorun (pmap project-commit rev-maps))
-    (println "All done!")))
+    (println "Everything connected. All done!")))
+
 
 (defn -main [& args]
   (case (first args)
     "load" (load-db)
 ;;    "analyze" (analyze-db)
-    ))
+    )
+  (System/exit 0))

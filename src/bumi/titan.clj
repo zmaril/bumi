@@ -14,12 +14,12 @@
   (g/transact!
    ;;Types
    ;;"person","commit","file","tag"
-   (t/create-property-key-once :type String
+   (t/defkey-once :type String
                                {:indexed-vertex? true
                                 :unique-direction :out})
    ;;Person name
    ;;"Linus Torvalds"
-   (t/create-property-key-once :name String                              
+   (t/defkey-once :name String                              
                                {:indexed-vertex? true
                                 :unique-direction :out})
    ;;Person email
@@ -32,48 +32,48 @@
    ;;Mentioned {:name Jan Beulich, :email JBeulich@suse.com, :type person, :date nil, :timezone nil}
    ;;Mentioned {:name Ian Campbell, :email ian.campbell@citrix.com, :type person, :date nil, :timezone nil}
 
-   (t/create-property-key-once :email String
+   (t/defkey-once :email String
                                {:unique-direction :out})
 
    ;;Commit hash
    ;;"990c6bebda133c5f0b1d33682245f611ffc02e6b"
-   (t/create-property-key-once :hash String
+   (t/defkey-once :hash String
                                {:indexed-vertex? true
                                 :unique-direction :out})
    ;;Commit message
    ;;"Example message"
-   (t/create-property-key-once :message String
+   (t/defkey-once :message String
                                {:unique-direction :out})
 
    ;;File name
    ;;"/src/projects.clj"
-   (t/create-property-key-once :filename String
+   (t/defkey-once :filename String
                                {:indexed-vertex? true
                                 :unique-direction :out})   
    ;;Tag name
    ;;"rc-0.14"
-   (t/create-property-key-once :tag-name String
+   (t/defkey-once :tag-name String
                                {:indexed-vertex? true
                                 :unique-direction :out})   
    ;;Commit -> Person
-   (let [mentioned (t/create-group 2 "mentioned")]
-     (t/create-edge-label-once :reviewed-by {:group mentioned})
-     (t/create-edge-label-once :reported-by {:group mentioned})
-     (t/create-edge-label-once :tested-by   {:group mentioned})
-     (t/create-edge-label-once :acked-by    {:group mentioned})
-     (t/create-edge-label-once :from        {:group mentioned})
-     (t/create-edge-label-once :cc          {:group mentioned}))   
+   (let [mentioned (t/defgroup 2 "mentioned")]
+     (t/deflabel-once :reviewed-by {:group mentioned})
+     (t/deflabel-once :reported-by {:group mentioned})
+     (t/deflabel-once :tested-by   {:group mentioned})
+     (t/deflabel-once :acked-by    {:group mentioned})
+     (t/deflabel-once :from        {:group mentioned})
+     (t/deflabel-once :cc          {:group mentioned}))   
    ;;Person -> Commit
-   (t/create-edge-label-once :committed)
-   (t/create-edge-label-once :authored)
+   (t/deflabel-once :committed)
+   (t/deflabel-once :authored)
    ;;When the person authored or committed the commit. 
-   (t/create-property-key-once :date java.util.Date
+   (t/defkey-once :date java.util.Date
                                {:indexed-edge? true
                                 :unique-direction :out})
    ;;Commit -> Commit
-   (t/create-edge-label-once :child-of)   
+   (t/deflabel-once :child-of)   
    ;;Commit -> File
-   (t/create-edge-label-once :edited)
-   (t/create-edge-label-once :created)
-   (t/create-edge-label-once :deleted))  
+   (t/deflabel-once :edited)
+   (t/deflabel-once :created)
+   (t/deflabel-once :deleted))  
   (println "All set up! WAAHHOOOOOO!"))

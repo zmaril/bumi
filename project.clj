@@ -9,6 +9,6 @@
                  ["oracle" "http://download.oracle.com/maven/"]]  
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [clj-jgit "0.3.1"]
-                 [clojurewerkz/titanium "1.0.0-alpha4-SNAPSHOT"]]
+                 [clojurewerkz/titanium "1.0.0-beta1"]]
   :jvm-opts ["-Xms1g" "-Xmx10g" "-server"]
   :main bumi.core)
