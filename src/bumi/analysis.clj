@@ -6,6 +6,9 @@
             [clojurewerkz.titanium.types :as t]
             [ogre.core :as q]))
 
+;;Warm up function that starts everything up for commits, files,
+;;people 
+
 ;;TODO should passing in labels be a []? 
 (defn degree-of [v & labels]
   (q/query v
@@ -62,3 +65,9 @@
 (q/query linus
          (q/--> :authored)
          q/count!)
+
+
+(q/query commit
+         (q/--> :)
+)
+

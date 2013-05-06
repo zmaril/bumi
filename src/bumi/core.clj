@@ -1,5 +1,5 @@
 (ns bumi.core
-  (:require [bumi.pallet :refer (init-server)]
+  (:require [bumi.pallet :refer (init-server kill-server)]
             [bumi.titan :refer (start)]
             [bumi.git :refer (RevCommit->map rev-list)]
             [clojurewerkz.titanium.graph :as g]
@@ -99,9 +99,12 @@
 
 
 (defn -main [& args]
+  (println args)
   (case (first args)
-    "init" (init-server)
+    "init-server" (init-server)
+    "kill-server" (kill-server)
     "load" (load-db)
 ;;    "analyze" (analyze-db)
     )
+  (println "All done!")
   (System/exit 0))
