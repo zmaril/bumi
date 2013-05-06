@@ -9,6 +9,33 @@
                  ["oracle" "http://download.oracle.com/maven/"]]  
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [clj-jgit "0.3.1"]
-                 [clojurewerkz/titanium "1.0.0-beta1"]]
-  :jvm-opts ["-Xms1g" "-Xmx10g" "-server"]
+                 [clojurewerkz/titanium "1.0.0-beta1"]
+                 ;;Pallet stuff
+                 [org.cloudhoist/pallet "0.7.4"]
+                 [org.cloudhoist/pallet-jclouds "1.5.2"]
+                 ;; To get started we include all jclouds compute providers.
+                 ;; You may wish to replace this with the specific jclouds
+                 ;; providers you use, to reduce dependency sizes.
+                 [org.jclouds/jclouds-allblobstore "1.5.5"]
+                 [org.jclouds/jclouds-allcompute "1.5.5"]
+                 [org.jclouds.driver/jclouds-slf4j "1.5.5"
+                  ;; the declared version is old and can overrule the
+                  ;; resolved version
+                  :exclusions [org.slf4j/slf4j-api]]
+                 [org.jclouds.driver/jclouds-sshj "1.5.5"]
+                 [ch.qos.logback/logback-classic "1.0.9"]]
+  :local-repo-classpath true
+  :dev-dependencies [[org.cloudhoist/pallet
+                      "0.7.4" :type "test-jar"]
+                     [org.cloudhoist/pallet-lein "0.5.2"]]
+  :profiles {:dev
+             {:dependencies
+              [[org.cloudhoist/pallet "0.7.4"
+                :classifier "tests"]]
+              :plugins
+              [[org.cloudhoist/pallet-lein "0.5.2"]]}
+             :leiningen/reply
+             {:dependencies [[org.slf4j/jcl-over-slf4j "1.7.2"]]
+              :exclusions [commons-logging]}}
+  :jvm-opts ["-Xmx10g" "-server"]
   :main bumi.core)
