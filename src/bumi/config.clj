@@ -9,7 +9,7 @@
    (str "file://" (System/getProperty "user.dir")  "/resources/cassandra.yaml") }  )
 
 (def git-root-dir (or (env "BUMI_GIT_DIR")
-                      "/Users/zackmaril/Projects/experiments/linux/"))
+                      (str (env "HOME") "/linux-2.6")))
 
 (def debug (boolean (env "BUMI_DEBUG")))
 
